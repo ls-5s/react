@@ -311,3 +311,127 @@ function Profile(props) {
   );
 }
 ```
+## 条件渲染
+通常你的组件会需要根据不同的情况显示不同的内容。在 React 中，你可以通过使用 JavaScript 的 if 语句、&& 和 ? : 运算符来选择性地渲染 JSX。
+
+**if/else 语句的使用**
+如果 isPacked 属性是 true，这段代码会返回一个不一样的 JSX。通过这样的改动，一些物品的名字后面会出现一个勾选符号：
+```jsx
+function Item({ name, isPacked }) {
+  if (isPacked) {
+    return <li className="item">{name} ✅</li>;
+  }
+  return <li className="item">{name}</li>;
+}
+
+export default function PackingList() {
+  return (
+    <section>
+      <h1>Sally Ride 的行李清单</h1>
+      <ul>
+        <Item 
+          isPacked={true} 
+          name="宇航服" 
+        />
+        <Item 
+          isPacked={true} 
+          name="带金箔的头盔" 
+        />
+        <Item 
+          isPacked={false} 
+          name="Tam 的照片" 
+        />
+      </ul>
+    </section>
+  );
+}
+
+```
+Sally Ride 的行李清单
+宇航服 ✅
+带金箔的头盔 ✅
+Tam 的照片
+
+**子和父组件在同一个页面是否有先后顺序**
+- 语法层面：顺序不强制（函数声明的 “提升” 特性）
+
+在你的代码中，Item和PackingList都是函数式组件（采用函数声明的方式：function 组件名() {}）。而 JavaScript 有一个函数声明提升（Hoisting） 的特性：
+- 特殊情况：顺序会强制要求（函数表达式 / 箭头函数）
+
+如果你的组件采用函数表达式（或箭头函数）的方式定义（比如const Item = () => {}），那么必须先定义子组件，再定义父组件，因为函数表达式没有 “提升” 特性，未定义就使用会直接报错。
+
+**选择性地包含 JSX**
+- 解决重复代码问题
+- 解决思路
+
+核心思路是：把重复的 JSX 部分（<li className="item">...</li>）提取为公共部分，只对变化的部分（✅标记）进行条件控制。具体有两种常用的实现方式，都能达到消除重复的目的。
+
+=======================================
+
+先定义变量存储动态内容（适合新手理解）
+我们可以先创建一个变量来存储 “物品名称 + 可选的✅”，然后将这个变量嵌入到公共的<li>标签中，这样就只需要写一次<li className="item">。
+```jsx
+import React from 'react';
+
+function Item({ name, isPacked }) {
+  // 定义变量存储动态内容：根据isPacked决定是否添加✅
+  let itemContent = name;
+  if (isPacked) {
+    itemContent = `${name} ✅`; // 也可以写为 itemContent = name + " ✅";
+  }
+
+  // 只返回一次公共的<li>标签，嵌入动态内容
+  return <li className="item">{itemContent}</li>;
+}
+
+export default function PackingList() {
+  return (
+    <section>
+      <h1>Sally Ride 的行李清单</h1>
+      <ul>
+        <Item isPacked={true} name="宇航服" />
+        <Item isPacked={true} name="带金箔的头盔" />
+        <Item isPacked={false} name="Tam 的照片" />
+      </ul>
+    </section>
+  );
+}
+```
+**三目运算符（? :）**
+除了这样：
+```jsx
+if (isPacked) {
+  return <li className="item">{name} ✅</li>;
+}
+return <li className="item">{name}</li>;
+```
+你还可以这样实现：
+```jsx
+return (
+  <li className="item">
+    {isPacked ? name + ' ✅' : name}
+  </li>
+);
+```
+**与运算符（&&）**
+```jsx
+function Item({ name, isPacked }) {
+  return (
+    <li className="item">
+      {name} {isPacked && '✅'}
+    </li>
+  );
+}
+
+```
+在 JavaScript 中，A && B的执行逻辑是：
+如果A为真（true），则表达式返回B；
+如果A为假（false），则表达式返回false（React 会自动忽略false、null、undefined这些值，不会渲染到页面上）。
+
+**注意**
+切勿将数字放在 && 左侧.
+- JavaScript 会自动将左侧的值转换成布尔类型以判断条件成立与否。然而，如果左侧是 0，整个表达式将变成左侧的值（0），React 此时则会渲染 0 而不是不进行渲染。
+
+- 例如，一个常见的错误是 messageCount && <p>New messages</p>。其原本是想当 messageCount 为 0 的时候不进行渲染，但实际上却渲染了 0。
+
+- 为了更正，可以将左侧的值改成布尔类型：messageCount > 0 && <p>New messages</p>。
