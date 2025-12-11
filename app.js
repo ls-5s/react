@@ -1,12 +1,10 @@
-function App() {
-  return <div>hello world!</div>;
-}
-export default function Sum() {
+const  person = { name: "Hedy Lamarr", inventions: 5 };
+
+export default function Person() {
   return (
     <div>
-      <App />
-      <App />
-      <App />
+      <h1>{person.name}</h1>
+      <p>{person.inventions}</p>
     </div>
   );
 }

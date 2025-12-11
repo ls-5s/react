@@ -194,3 +194,36 @@ JSX 虽然看起来很像 HTML，但在底层其实被转化为了 JavaScript �
 JavaScript 有一系列保留字（如class、for、if、else等），这些单词被语言本身占用，不能直接作为变量名或对象键名。
 
 ## 在 JSX 中通过大括号使用 JavaScript
+JSX 允许你在 JavaScript 中编写类似 HTML 的标签，从而使渲染的逻辑和内容可以写在一起。有时候，你可能想要在标签中添加一些 JavaScript 逻辑或者引用动态的属性。这种情况下，你可以在 JSX 的大括号内来编写 JavaScript。
+
+**使用引号传递字符串**
+```jsx
+export default function Avatar() {
+  const avatar = 'https://i.imgur.com/7vQD0fPs.jpg';
+  const description = 'Gregorio Y. Zara';
+  return (
+    <img
+      className="avatar"
+      src={avatar}
+      alt={description}
+    />
+  );
+}
+```
+
+**可以在哪使用大括号**
+
+在 JSX 中，只能在以下两种场景中使用大括号：
+
+- 用作 JSX 标签内的文本：<h1>{name}'s To Do List</h1> 是有效的，但是 <{tag}>Gregorio Y. Zara's To Do List</{tag}> 无效。
+- 用作紧跟在 = 符号后的 属性：src={avatar} 会读取 avatar 变量，但是 src="{avatar}" 只会传一个字符串 {avatar}。
+  
+**使用 “双大括号”：JSX 中的 CSS 和 对象** 
+
+除了字符串、数字和其它 JavaScript 表达式，你甚至可以在 JSX 中传递对象。对象也用大括号表示，例如 { name: "Hedy Lamarr", inventions: 5 }。因此，为了能在 JSX 中传递，你必须用另一对额外的大括号包裹对象：person={{ name: "Hedy Lamarr", inventions: 5 }}。
+
+**注意**
+内联 style 属性 使用驼峰命名法编写。例如，
+```HTML 
+<ul style="background-color: black"> 在你的组件里应该写成 <ul style={{ backgroundColor: 'black' }}>。
+```
