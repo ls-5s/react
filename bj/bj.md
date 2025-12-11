@@ -227,3 +227,87 @@ export default function Avatar() {
 ```HTML 
 <ul style="background-color: black"> 在你的组件里应该写成 <ul style={{ backgroundColor: 'black' }}>。
 ```
+## 将 Props 传递给组件
+React 组件使用 props 来互相通信。每个父组件都可以提供 props 给它的子组件，从而将一些信息传递给它。Props 可能会让你想起 HTML 属性，但你可以通过它们传递任何 JavaScript 值，包括对象、数组和函数。
+
+- 步骤 1：创建子组件文件 Avatar.jsx
+在该文件中定义并导出子组件Avatar（命名导出 / 默认导出均可，这里用默认导出）：
+```jsx
+// src/components/Avatar.jsx
+// 子组件 Avatar：定义并默认导出
+export default function Avatar({ person, size }) {
+  const { name, imageId } = person;
+  const imageUrl = `https://i.imgur.com/${imageId}.jpg`;
+
+  return (
+    <img
+      src={imageUrl}
+      alt={name}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        objectFit: 'cover'
+      }}
+    />
+  );
+}
+```
+- 步骤 2：在父组件文件 Profile.jsx 中导入子组件
+在父组件文件中通过import语句引入Avatar组件，然后使用：
+```jsx
+// src/components/Profile.jsx
+// 导入子组件 Avatar（路径根据文件实际位置调整）
+import Avatar from './Avatar';
+
+// 父组件 Profile：默认导出
+export default function Profile() {
+  return (
+    <div style={{ padding: '20px' }}>
+      <Avatar
+        person={{ name: 'Lin Lanying', imageId: '1bX5QH6' }}
+        size={100}
+      />
+    </div>
+  );
+}
+```
+
+- 先理解 React 组件的 props 本质
+React 函数组件的参数本质上是一个props 对象，这个对象包含了父组件传递过来的所有属性。比如：当父组件这样使用你的 Avatar 组件时：
+```jsx
+<Avatar person={{ name: '张三', img: 'xxx.jpg' }} size={40} />
+你的 Avatar 组件接收到的参数其实是一个完整的对象，长这样：
+javascript
+运行
+{
+  person: { name: '张三', img: 'xxx.jpg' },
+  size: 40
+}
+```
+- 使用 JSX 展开语法传递 props
+有时候，传递 props 会变得非常重复：
+```jsx
+function Profile({ person, size, isSepia, thickBorder }) {
+  return (
+    <div className="card">
+      <Avatar
+        person={person}
+        size={size}
+        isSepia={isSepia}
+        thickBorder={thickBorder}
+      />
+    </div>
+  );
+}
+```
+改成
+```jsx
+function Profile(props) {
+  return (
+    <div className="card">
+      <Avatar {...props} />
+    </div>
+  );
+}
+```
