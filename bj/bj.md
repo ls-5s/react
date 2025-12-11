@@ -134,3 +134,63 @@ import Profile from './Profile.js';
 // 甚至可以重命名（比如避免冲突）
 import UserProfile from './Profile.js';
 ```
+
+## 使用 JSX 书写标签语言
+JSX 是 JavaScript 语法扩展，可以让你在 JavaScript 文件中书写类似 HTML 的标签。虽然还有其它方式可以编写组件，但大部分 React 开发者更喜欢 JSX 的简洁性，并且在大部分代码库中使用它。
+
+**JSX 规则**
+
+1. 只能返回一个根元素 
+如果想要在一个组件中包含多个元素，需要用一个父标签把它们包裹起来。
+
+例如，你可以使用一个 <div> 标签：
+```jsx
+<div>
+  <h1>海蒂·拉玛的待办事项</h1>
+  <img 
+    src="https://i.imgur.com/yXOvdOSs.jpg" 
+    alt="Hedy Lamarr" 
+    class="photo"
+  >
+  <ul>
+    ...
+  </ul>
+</div>
+```
+如果你不想在标签中增加一个额外的 <div>，可以用 <> 和 </> 元素来代替：
+2. 标签必须闭合 
+JSX 要求标签必须正确闭合。像 <img> 这样的自闭合标签必须书写成 <img />，而像 <li>oranges 这样只有开始标签的元素必须带有闭合标签，需要改为 <li>oranges</li>
+
+3. 属性使用驼峰式命名 & 特殊属性替换
+
+JSX 的属性名遵循小驼峰命名法，且 JavaScript 保留字 / HTML 带连字符的属性需要替换：
+HTML 的class → JSX 的className（class是 JS 保留字）
+HTML 的for → JSX 的htmlFor（for是 JS 保留字）
+HTML 的onclick → JSX 的onClick（驼峰式）
+HTML 的stroke-width → JSX 的strokeWidth（连字符转驼峰）
+HTML 的font-size → JSX 的fontSize（连字符转驼峰）
+```jsx
+// 正确：使用className、htmlFor、onClick、fontSize
+<div className="box" style={{ fontSize: '16px' }}>
+  <label htmlFor="username">用户名：</label>
+  <input id="username" type="text" onClick={() => {}} />
+</div>
+
+// 错误：使用class、for、onclick、font-size
+<div class="box" style={{ font-size: '16px' }}>
+  <label for="username">用户名：</label>
+  <input id="username" type="text" onclick={() => {}} />
+</div>
+```
+**注意**
+
+- JSX and React 是相互独立的 东西。但它们经常一起使用，但你 可以 单独使用它们中的任意一个，JSX 是一种语法扩展，而 React 则是一个 JavaScript 的库。
+- 为什么多个 JSX 标签需要被一个父元素包裹？
+JSX 虽然看起来很像 HTML，但在底层其实被转化为了 JavaScript 对象，你不能在一个函数中返回多个对象，除非用一个数组把他们包装起来。这就是为什么多个 JSX 标签必须要用一个父元素或者 Fragment 来包裹。
+- 为什么要使用驼峰式？两个关键限制
+1. 限制 1：JavaScript 中，对象键名不能包含连字符（-）
+在 JavaScript 里，连字符-是减法运算符，如果对象键名写stroke-width，会被解析成stroke - width（即变量stroke减去变量width），导致语法错误。
+2. 限制 2：JavaScript 的保留字不能作为标识符
+JavaScript 有一系列保留字（如class、for、if、else等），这些单词被语言本身占用，不能直接作为变量名或对象键名。
+
+## 在 JSX 中通过大括号使用 JavaScript
