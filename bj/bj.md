@@ -435,3 +435,6 @@ function Item({ name, isPacked }) {
 - 例如，一个常见的错误是 messageCount && <p>New messages</p>。其原本是想当 messageCount 为 0 的时候不进行渲染，但实际上却渲染了 0。
 
 - 为了更正，可以将左侧的值改成布尔类型：messageCount > 0 && <p>New messages</p>。
+
+## 渲染列表
+你可能经常需要通过 JavaScript 的数组方法 来操作数组中的数据，从而将一个数据集渲染成多个相似的组件。在这篇文章中，你将学会如何在 React 中使用 filter() 筛选需要渲染的组件和使用 map() 把数组转换成组件数组。
