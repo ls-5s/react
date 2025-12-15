@@ -438,3 +438,68 @@ function Item({ name, isPacked }) {
 
 ## 渲染列表
 你可能经常需要通过 JavaScript 的数组方法 来操作数组中的数据，从而将一个数据集渲染成多个相似的组件。在这篇文章中，你将学会如何在 React 中使用 filter() 筛选需要渲染的组件和使用 map() 把数组转换成组件数组。
+- 简化写法：filter() + map() 链式调用
+```jsx
+import React from 'react';
+
+function AdultUserList() {
+  const users = [
+    { id: 1, name: '张三', age: 20 },
+    { id: 2, name: '李四', age: 17 },
+    { id: 3, name: '王五', age: 25 },
+  ];
+
+  return (
+    <div>
+      <h3>成年用户列表</h3>
+      <ul>
+        {users
+          // 先筛选：只保留成年用户
+          .filter((user) => user.age > 18)
+          // 再转换：生成组件
+          .map((user) => (
+            <li key={user.id}>
+              姓名：{user.name}，年龄：{user.age}岁
+            </li>
+          ))}
+      </ul>
+    </div>
+  );
+}
+
+export default AdultUserList;
+```
+**注意**
+因为箭头函数会隐式地返回位于 => 之后的表达式，所以你可以省略 return 语句。
+```jsx
+const listItems = chemists.map(person =>
+  <li>...</li> // 隐式地返回！
+);
+```
+不过，如果你的 => 后面跟了一对花括号 { ，那你必须使用 return 来指定返回值！
+```jsx
+const listItems = chemists.map(person => { // 花括号
+  return <li>...</li>;
+});
+```
+箭头函数 => { 后面的部分被称为 “块函数体”，块函数体支持多行代码的写法，但要用 return 语句才能指定返回值。假如你忘了写 return，那这个函数什么都不会返回！
+
+- 为每个列表项显示多个 DOM 节点
+如果你想让每个列表项都输出多个 DOM 节点而非一个的话，该怎么做呢？
+
+Fragment 语法的简写形式 <> </> 无法接受 key 值，所以你只能要么把生成的节点用一个 <div> 标签包裹起来，要么使用长一点但更明确的 <Fragment> 写法：
+```jsx
+import { Fragment } from 'react';
+
+// ...
+
+const listItems = people.map(person =>
+  <Fragment key={person.id}>
+    <h1>{person.name}</h1>
+    <p>{person.bio}</p>
+  </Fragment>
+);
+```
+- 直接放在 map() 方法里的 JSX 元素一般都需要指定 key 值！
+
+## 保持组件纯粹
