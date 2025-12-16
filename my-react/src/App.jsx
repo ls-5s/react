@@ -1,15 +1,13 @@
-
-
+import {useState} from 'react'
 function App() {
-  function arr() {
-    alert("hhhhhhhhhhhh")
+  const [index,setIndex] = useState(0)
+    function arr() {
+      setIndex(index + 1)
   }
   return (
     <div>
     <button onClick={arr}> 点击； </button>
-    <button onClick={() => {
-  alert('你点击了我！');
-}}></button>
+   <div>{index}</div>
 </div>
   )
 }
