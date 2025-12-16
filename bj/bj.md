@@ -311,6 +311,36 @@ function Profile(props) {
   );
 }
 ```
+**特殊传值**
+- 一、场景 1：组件标签包裹的内容（children不能直接换名）
+children是 React 的内置特殊 props，专门用来接收组件标签对之间包裹的内容。比如你原来的写法：
+```jsx
+===================
+// 子组件：把 children 重命名为 btnText
+function AlertButton({ message, children: btnText }) 
+====================
+function AlertButton({ message, children }) {
+  return (
+    <button onClick={() => alert(message)}>
+      {children}
+    </button>
+  );
+}
+
+export default function Toolbar() {
+  return (
+    <div>
+      <AlertButton message="正在播放！">
+        播放电影
+      </AlertButton>
+      <AlertButton message="正在上传！">
+        上传图片
+      </AlertButton>
+    </div>
+  );
+}
+```
+
 ## 条件渲染
 通常你的组件会需要根据不同的情况显示不同的内容。在 React 中，你可以通过使用 JavaScript 的 if 语句、&& 和 ? : 运算符来选择性地渲染 JSX。
 
@@ -502,4 +532,95 @@ const listItems = people.map(person =>
 ```
 - 直接放在 map() 方法里的 JSX 元素一般都需要指定 key 值！
 
-## 保持组件纯粹
+## 保持组件纯粹(看的有点云里雾里的)
+
+# 添加交互
+## 响应事件
+使用 React 可以在 JSX 中添加 事件处理函数。其中事件处理函数为自定义函数，它将在响应交互（如点击、悬停、表单输入框获得焦点等）时触发。
+**添加事件处理函数**
+按照如下三个步骤，即可让它在用户点击时显示消息：
+
+1. 在 Button 组件 内部 声明一个名为 handleClick 的函数。
+2. 实现函数内部的逻辑（使用 alert 来显示消息）。
+3. 添加 onClick={handleClick} 到 <button> JSX 中。
+```jsx
+export default function app () {
+
+  function s () {
+    alert("jjjjjjjjjj")
+  }
+  return (
+    <button onClick={s}>点击<button>
+  )
+}
+```
+
+**在事件处理函数中读取 props**
+```jsx
+function AlertButton({ message, children }) {
+  return (
+    <button onClick={() => alert(message)}>
+      {children}
+    </button>
+  );
+}
+
+export default function Toolbar() {
+  return (
+    <div>
+      <AlertButton message="正在播放！">
+        播放电影
+      </AlertButton>
+      <AlertButton message="正在上传！">
+        上传图片
+      </AlertButton>
+    </div>
+  );
+}
+```
+**阻止传播**
+这个事件对象还允许你阻止传播。如果你想阻止一个事件到达父组件，你需要像下面 Button 组件那样调用 e.stopPropagation() ：
+```jsx
+function Button({ onClick, children }) {
+  return (
+    <button onClick={e => {
+      e.stopPropagation();
+      onClick();
+    }}>
+      {children}
+    </button>
+  );
+}
+
+export default function Toolbar() {
+  return (
+    <div className="Toolbar" onClick={() => {
+      alert('你点击了 toolbar ！');
+    }}>
+      <Button onClick={() => alert('正在播放！')}>
+        播放电影
+      </Button>
+      <Button onClick={() => alert('正在上传！')}>
+        上传图片
+      </Button>
+    </div>
+  );
+}
+
+```
+**阻止默认行为**
+某些浏览器事件具有与事件相关联的默认行为。例如，点击 <form> 表单内部的按钮会触发表单提交事件，默认情况下将重新加载整个页面：
+你可以调用事件对象中的 e.preventDefault() 来阻止这种情况发生：
+```jsx
+export default function Signup() {
+  return (
+    <form onSubmit={e => {
+      e.preventDefault();
+      alert('提交表单！');
+    }}>
+      <input />
+      <button>发送</button>
+    </form>
+  );
+}
+```
