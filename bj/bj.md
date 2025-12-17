@@ -720,3 +720,79 @@ export default function Counter() {
 ```
 简单来说：setTimeout 的回调函数捕获的是事件处理函数执行时的 number 快照，而不是状态更新后的最新值。
 一个 state 变量的值永远不会在一次渲染的内部发生变化， 即使其事件处理函数的代码是异步的。在 那次渲染的 onClick 内部，number 的值即使在调用 setNumber(number + 5) 之后也还是 0。它的值在 React 通过调用你的组件“获取 UI 的快照”时就被“固定”了。
+**函数式更新突破快照的限制（合理利用快照特性）**
+```jsx
+import { useState } from 'react';
+
+export default function SnapshotDemo3() {
+  const [count, setCount] = useState(0);
+
+  const handleClick = () => {
+    // 函数式更新：参数 prevCount 是上一次更新后的 state 快照
+    setCount(prevCount => prevCount + 1); // 基于快照0 → 1
+    setCount(prevCount => prevCount + 1); // 基于快照1 → 2
+    setCount(prevCount => prevCount + 1); // 基于快照2 → 3
+    // 最终 count 会变成3，因为每次更新都基于前一次的最新快照
+  };
+
+  return (
+    <div>
+      <h1>Count: {count}</h1>
+      <button onClick={handleClick}>点击+3</button>
+    </div>
+
+  );
+}
+```
+- 函数式更新的参数 prevCount 是 React 帮我们保存的上一次更新后的 state 快照，而不是当前渲染的快照。
+- 三次调用中，每次的 prevCount 都是前一次更新后的结果，所以最终能实现累加 3 的效果。
+- 这是 React 在快照特性下，为我们提供的既保持快照的稳定性，又能实现连续更新的优雅方案。
+
+## 把一系列 state 更新加入队列
+设置组件 state 会把一次重新渲染加入队列。但有时你可能会希望在下次渲染加入队列之前对 state 的值执行多次操作。为此，了解 React 如何批量更新 state 会很有帮助。
+**React 会对 state 更新进行批处理**
+```jsx
+import { useState } from 'react';
+
+export default function Counter() {
+  const [number, setNumber] = useState(0);
+
+  const handleClick = () => {
+    // 三次直接传值更新，都基于初始的number=0
+    setNumber(number + 1); // 0+1=1
+    setNumber(number + 1); // 0+1=1（覆盖上一个）
+    setNumber(number + 1); // 0+1=1（再覆盖）
+  };
+
+  return (
+    <>
+      <h1>{number}</h1>
+      <button onClick={handleClick}>增加数字</button>
+    </>
+  );
+}
+```
+**在下次渲染前多次更新同一个 state**
+```jsx
+import { useState } from 'react';
+
+export default function Counter() {
+  const [number, setNumber] = useState(0);
+
+  const handleClick = () => {
+    // 三次直接传值更新，都基于初始的number=0
+    setNumber(number + 1); // 0+1=1
+    setNumber(number + 1); // 0+1=1（覆盖上一个）
+    setNumber(number + 1); // 0+1=1（再覆盖）
+  };
+
+  return (
+    <>
+      <h1>{number}</h1>
+      <button onClick={handleClick}>增加数字</button>
+    </>
+  );
+}
+```
+
+## 更新 state 中的对象
