@@ -2,445 +2,500 @@
 <html lang="zh-CN">
 
 <head>
-    <!-- 文档类型声明 -->
-    <!-- 使用中文语言，优化中文显示 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>俄罗斯方块</title>
-    <!-- CSS样式开始 -->
+    <title>祈愿系统 - Excel增强版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        /* 重置默认样式，设置字体 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft YaHei", sans-serif;
+        /* --- 全局样式 & 变量 --- */
+        :root {
+            --theme-color: #ffd700;
+            /* 默认金色，会动态改变 */
+            --bg-gradient: radial-gradient(circle, #4a3e28 0%, #1a1c24 80%);
         }
 
-        /* 页面布局 */
         body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1c24;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background-color: #f0f0f0;
+            height: 100vh;
         }
 
-        /* 游戏容器定位 */
-        .game-container {
+        /* --- 1. 输入界面 --- */
+        #input-screen {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #4a4e5e;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+            transition: opacity 0.5s;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        h1 {
+            margin: 0 0 20px;
+            color: #d4c5a3;
+            letter-spacing: 2px;
+        }
+
+        /* Excel 上传按钮美化 */
+        .file-upload-wrapper {
+            margin-bottom: 20px;
             position: relative;
+            overflow: hidden;
+            display: inline-block;
         }
 
-        /* 游戏面板网格布局 */
-        #game-board {
-            display: grid;
-            grid-template-columns: repeat(10, 30px); /* 10列 */
-            grid-template-rows: repeat(20, 30px);    /* 20行 */
-            gap: 1px;
-            background-color: #333;
-            padding: 1px;
+        .btn-file {
+            border: 2px solid #6b7085;
+            color: #ddd;
+            background-color: transparent;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
         }
 
-        /* 单元格样式 */
-        .cell {
-            width: 30px;
-            height: 30px;
-            background-color: #fff;
+        .btn-file:hover {
+            border-color: #dabe86;
+            color: #dabe86;
         }
 
-        /* 计分板位置和样式 */
-        .score-panel {
+        input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #6b7085;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            resize: none;
+            font-size: 14px;
+            margin-bottom: 20px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .btn-wish {
+            background: linear-gradient(to right, #dabe86, #f3e6c3);
+            border: none;
+            padding: 12px 50px;
+            font-size: 18px;
+            color: #584b31;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(218, 190, 134, 0.4);
+            transition: transform 0.1s, filter 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            gap: 10px;
+        }
+
+        .btn-wish:hover {
+            filter: brightness(1.1);
+            transform: scale(1.05);
+        }
+
+        .btn-wish:active {
+            transform: scale(0.95);
+        }
+
+        .primogem-icon {
+            width: 24px;
+            height: 24px;
+            background: conic-gradient(from 45deg, #a7d8e6, #c597d8, #a7d8e6);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+
+        /* --- 2. 动画容器 --- */
+        #animation-container {
             position: absolute;
             top: 0;
-            right: -150px;
-            width: 120px;
-            padding: 10px;
-            background-color: #fff;
-            border: 2px solid #333;
-            border-radius: 5px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            overflow: hidden;
+            z-index: 20;
+        }
+
+        /* 流星 - 使用变量控制颜色 */
+        .meteor {
+            position: absolute;
+            width: 100px;
+            height: 4px;
+            /* 动态渐变颜色 */
+            background: linear-gradient(90deg, transparent, #fff, var(--theme-color));
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            transform: rotate(-45deg);
+            box-shadow: 0 0 20px var(--theme-color);
+            display: none;
+        }
+
+        @keyframes shoot {
+            0% {
+                top: -10%;
+                right: -10%;
+                width: 100px;
+                opacity: 1;
+            }
+
+            60% {
+                top: 50%;
+                right: 50%;
+                width: 300px;
+                opacity: 1;
+            }
+
+            100% {
+                top: 52%;
+                right: 52%;
+                width: 50px;
+                opacity: 0;
+            }
+        }
+
+        #flash {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* --- 3. 结果展示 --- */
+        #result-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            /* 背景动态变化 */
+            background: var(--bg-gradient);
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .card {
+            width: 0px;
+            height: 600px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.5));
+            border: 2px solid var(--theme-color);
+            box-shadow: 0 0 50px var(--theme-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transform: scale(0.8);
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        .winner-name {
+            font-size: 60px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 20px var(--theme-color);
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(20px);
             text-align: center;
+            padding: 0 20px;
         }
 
-        /* 计分板标题样式 */
-        .score-panel h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
+        .stars {
+            color: var(--theme-color);
+            font-size: 30px;
+            margin-bottom: 20px;
+            letter-spacing: 5px;
+            opacity: 0;
         }
 
-        /* 计分板段落样式 */
-        .score-panel p {
-            font-size: 16px;
-            margin: 5px 0;
+        .silhouette {
+            font-size: 150px;
+            position: absolute;
+            color: rgba(0, 0, 0, 0.3);
+            z-index: 1;
         }
 
-        /* 方块颜色样式（对应七种形状） */
-        .cell.I {
-            background-color: #00ffff; /* 青色 */
+        .rays {
+            position: absolute;
+            width: 1000px;
+            height: 1000px;
+            /* 动态光芒颜色 */
+            background: repeating-conic-gradient(var(--theme-color) 0% 5%, transparent 5% 10%);
+            opacity: 0.1;
+            animation: rotate 20s linear infinite;
+            z-index: 0;
         }
 
-        .cell.O {
-            background-color: #ffff00; /* 黄色 */
+        @keyframes rotate {
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
-        .cell.T {
-            background-color: #a020f0; /* 紫色 */
+        @keyframes cardReveal {
+            0% {
+                width: 5px;
+                opacity: 0;
+                transform: scale(3);
+                filter: brightness(10);
+            }
+
+            50% {
+                width: 5px;
+                opacity: 1;
+                transform: scale(1);
+                filter: brightness(2);
+            }
+
+            100% {
+                width: 350px;
+                filter: brightness(1);
+            }
         }
 
-        .cell.L {
-            background-color: #ffa500; /* 橙色 */
+        @keyframes textFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .cell.J {
-            background-color: #0000ff; /* 蓝色 */
+        .btn-reset {
+            margin-top: 30px;
+            padding: 10px 30px;
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #ddd;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 10;
         }
 
-        .cell.Z {
-            background-color: #ff0000; /* 红色 */
-        }
-
-        .cell.S {
-            background-color: #00ff00; /* 绿色 */
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
 
 <body>
-    <!-- 游戏主容器 -->
-    <div class="game-container">
-        <!-- 游戏面板 -->
-        <div id="game-board"></div>
-        <!-- 计分板 -->
-        <div class="score-panel">
-            <h2>得分</h2>
-            <p id="score">0</p>
-            <h2>提示</h2>
-            <p>↑：旋转</p>
-            <p>←→：移动</p>
-            <p>↓：加速下落</p>
+
+    <div id="input-screen">
+        <h1>人员名单</h1>
+
+        <div class="file-upload-wrapper">
+            <button class="btn-file">📂 导入 Excel 文件</button>
+            <input type="file" id="excel-file" accept=".xlsx, .xls" onchange="importExcel(this)">
         </div>
+
+        <textarea id="names" placeholder="或者在此手动输入&#10;每行一个名字"></textarea>
+
+        <button class="btn-wish" onclick="startWish()">
+            <div class="primogem-icon"></div>
+            祈愿 x1
+        </button>
+        <p style="font-size: 12px; color: #888; margin-top:10px;">Excel 格式：第一列为名字列表</p>
     </div>
 
-    <!-- JavaScript主要逻辑部分 -->
+    <div id="animation-container">
+        <div class="meteor" id="meteor"></div>
+        <div id="flash"></div>
+    </div>
+
+    <div id="result-screen">
+        <div class="rays"></div>
+        <div class="card" id="result-card">
+            <div class="silhouette">?</div>
+            <div class="stars" id="star-display">★★★★★</div>
+            <div class="winner-name" id="winner-text"></div>
+        </div>
+        <button class="btn-reset" onclick="resetSystem()">再次祈愿</button>
+    </div>
+
     <script>
-        // 游戏常量定义
-        const ROWS = 20;       // 游戏区域行数
-        const COLS = 10;       // 游戏区域列数
-        const CELL_SIZE = 30;  // 每个格子的尺寸
-
-        // 七种俄罗斯方块的形状定义（使用二维数组表示，1表示方块占据，0表示空）
-        const SHAPES = [
-            // I型 - 一条直线
-            [[1, 1, 1, 1]],
-            // O型 - 正方形
-            [[1, 1], [1, 1]],
-            // T型 - T字形
-            [[0, 1, 0], [1, 1, 1]],
-            // L型 - L字形
-            [[0, 0, 1], [1, 1, 1]],
-            // J型 - J字形
-            [[1, 0, 0], [1, 1, 1]],
-            // Z型 - Z字形
-            [[1, 1, 0], [0, 1, 1]],
-            // S型 - S字形
-            [[0, 1, 1], [1, 1, 0]]
-        ];
-
-        // 方块对应的颜色类名，与CSS类名一致
-        const SHAPE_COLORS = ['I', 'O', 'T', 'L', 'J', 'Z', 'S'];
-
-        // 游戏状态变量
-        let board = [];         // 游戏面板二维数组，存储每个单元格的状态
-        let currentPiece = null; // 当前正在下落的方块对象
-        let currentX = 0;       // 当前方块的X坐标（列位置）
-        let currentY = 0;       // 当前方块的Y坐标（行位置）
-        let score = 0;          // 游戏得分
-        let gameInterval = null; // 游戏主循环定时器
-        let dropSpeed = 1000;   // 方块下落速度（毫秒）
-
-        /**
-         * 初始化游戏面板
-         * 创建ROWS x COLS的二维数组和对应的DOM元素
-         */
-        function initBoard() {
-            const gameBoard = document.getElementById('game-board');
-            gameBoard.innerHTML = '';  // 清空现有内容
-            board = [];  // 重置游戏面板数据
-
-            // 创建二维数组和DOM元素
-            for (let y = 0; y < ROWS; y++) {
-                board[y] = [];  // 初始化每一行
-                for (let x = 0; x < COLS; x++) {
-                    board[y][x] = '';  // 空字符串表示该格子为空
-
-                    // 创建对应的单元格DOM元素
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';  // 应用基础样式
-                    cell.id = `cell-${y}-${x}`;  // 设置唯一ID
-                    gameBoard.appendChild(cell);  // 添加到游戏面板
-                }
-            }
-        }
-
-        /**
-         * 生成新的随机方块
-         * 从SHAPES数组中随机选择一个形状，并设置其初始位置
-         */
-        function generatePiece() {
-            const randomIndex = Math.floor(Math.random() * SHAPES.length);  // 随机选择方块索引
-            const shape = SHAPES[randomIndex];  // 获取方块形状
-            const color = SHAPE_COLORS[randomIndex];  // 获取方块颜色
-
-            // 设置初始位置：水平居中，垂直在顶部
-            currentX = Math.floor(COLS / 2) - Math.floor(shape[0].length / 2);  // 计算起始列位置
-            currentY = 0;  // 起始行位置为0
-            currentPiece = { shape, color };  // 保存当前方块信息
-
-            // 检查新方块是否与已有方块重叠（游戏结束条件）
-            if (!isValidPosition(currentY, currentX, currentPiece.shape)) {
-                alert('游戏结束！你的得分：' + score);
-                clearInterval(gameInterval);  // 停止游戏循环
-                resetGame();  // 重置游戏
-            }
-        }
-
-        /**
-         * 绘制游戏场景
-         * 更新DOM元素以反映当前游戏面板和方块状态
-         */
-        function draw() {
-            // 遍历并更新所有单元格的样式
-            for (let y = 0; y < ROWS; y++) {
-                for (let x = 0; x < COLS; x++) {
-                    const cell = document.getElementById(`cell-${y}-${x}`);
-                    cell.className = 'cell';  // 重置为基本样式
-
-                    // 如果该格子有方块颜色，则添加相应类名
-                    if (board[y][x]) {
-                        cell.classList.add(board[y][x]);
-                    }
-                }
-            }
-
-            // 绘制当前正在下落的方块
-            if (currentPiece) {
-                const { shape, color } = currentPiece;
-
-                // 遍历当前方块的每个部分
-                for (let y = 0; y < shape.length; y++) {
-                    for (let x = 0; x < shape[y].length; x++) {
-                        // 如果当前方块的此位置有格子
-                        if (shape[y][x]) {
-                            const boardY = currentY + y;  // 对应游戏面板的行
-                            const boardX = currentX + x;  // 对应游戏面板的列
-
-                            // 确保坐标在游戏面板范围内
-                            if (boardY >= 0 && boardY < ROWS && boardX >= 0 && boardX < COLS) {
-                                const cell = document.getElementById(`cell-${boardY}-${boardX}`);
-                                cell.classList.add(color);  // 添加颜色类名
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * 检查指定位置是否有效
-         * @param {number} y - 行位置
-         * @param {number} x - 列位置
-         * @param {Array<Array<number>>} shape - 方块形状
-         * @returns {boolean} - 位置是否有效
-         */
-        function isValidPosition(y, x, shape) {
-            // 遍历方块的每个组成部分
-            for (let dy = 0; dy < shape.length; dy++) {
-                for (let dx = 0; dx < shape[dy].length; dx++) {
-                    // 如果当前方块位置有格子
-                    if (shape[dy][dx]) {
-                        const ny = y + dy;  // 新的行位置
-                        const nx = x + dx;  // 新的列位置
-
-                        // 检查是否超出边界
-                        if (ny >= ROWS || nx < 0 || nx >= COLS) {
-                            return false;
-                        }
-
-                        // 检查是否与已固定的方块重叠（忽略y<0的情况，因为方块可能刚出现）
-                        if (ny >= 0 && board[ny][nx]) {
-                            return false;
-                        }
-                    }
-                }
-            }
-            return true;  // 所有位置都有效
-        }
-
-        /**
-         * 将当前方块固定到游戏面板上
-         * 处理满行消除，并生成新方块
-         */
-        function lockPiece() {
-            const { shape, color } = currentPiece;
-
-            // 将当前方块的所有部分添加到游戏面板
-            for (let y = 0; y < shape.length; y++) {
-                for (let x = 0; x < shape[y].length; x++) {
-                    if (shape[y][x]) {
-                        const boardY = currentY + y;
-                        const boardX = currentX + x;
-
-                        // 只有当行位置非负时才设置（避免处理出现在顶部外的部分）
-                        if (boardY >= 0) {
-                            board[boardY][boardX] = color;
-                        }
-                    }
-                }
-            }
-
-            // 检查并消除满行
-            clearLines();
-            // 生成新的方块
-            generatePiece();
-        }
-
-        /**
-         * 消除满行并计算得分
-         * @returns {number} - 消除的行数
-         */
-        function clearLines() {
-            let linesCleared = 0;  // 消除的行数
-
-            // 从底部开始向上检查每一行
-            for (let y = ROWS - 1; y >= 0; y--) {
-                // 检查当前行是否满（所有格子都有颜色）
-                const isFull = board[y].every(cell => cell !== '');
-
-                if (isFull) {
-                    linesCleared++;  // 增加消除行数
-
-                    // 删除当前满行，并在顶部添加一行空行
-                    board.splice(y, 1);  // 删除第y行
-                    board.unshift(Array(COLS).fill(''));  // 在顶部添加空行
-
-                    // 因为删除了一行，继续检查当前y位置（原y-1行现在处于y位置）
-                    y++;
-                }
-            }
-
-            // 根据消除的行数更新分数
-            if (linesCleared > 0) {
-                // 消除不同行数给予不同奖励分数
-                score += linesCleared === 1 ? 100 : linesCleared === 2 ? 300 : linesCleared === 3 ? 500 : 800;
-                document.getElementById('score').textContent = score;  // 更新分数显示
-            }
-
-            return linesCleared;  // 返回消除的行数
-        }
-
-        /**
-         * 移动当前方块
-         * @param {number} dx - X方向移动距离
-         * @param {number} dy - Y方向移动距离
-         * @returns {boolean} - 是否成功移动
-         */
-        function move(dx, dy) {
-            // 检查移动后的新位置是否有效
-            if (currentPiece && isValidPosition(currentY + dy, currentX + dx, currentPiece.shape)) {
-                currentX += dx;  // 更新X坐标
-                currentY += dy;  // 更新Y坐标
-                draw();  // 重新绘制
-                return true;  // 移动成功
-            }
-
-            // 如果是向下移动且无法继续向下
-            if (dy > 0) {
-                lockPiece();  // 固定方块
-                draw();  // 重新绘制
-            }
-            return false;  // 移动失败
-        }
-
-        /**
-         * 旋转当前方块
-         * 使用矩阵转置的方式实现90度顺时针旋转
-         */
-        function rotate() {
-            if (!currentPiece) return;  // 如果没有当前方块则直接返回
-
-            // 实现矩阵顺时针旋转90度的算法
-            // 原理：将原矩阵的列变成新矩阵的行，然后每行反转
-            const rotatedShape = currentPiece.shape[0].map((_, index) =>
-                currentPiece.shape.map(row => row[index]).reverse()
-            );
-
-            // 尝试几种不同的放置位置来解决旋转碰撞问题（简单的墙踢机制）
-            if (isValidPosition(currentY, currentX, rotatedShape)) {
-                // 直接旋转
-                currentPiece.shape = rotatedShape;
-            } else if (isValidPosition(currentY, currentX - 1, rotatedShape)) {
-                // 向左偏移旋转
-                currentX -= 1;
-                currentPiece.shape = rotatedShape;
-            } else if (isValidPosition(currentY, currentX + 1, rotatedShape)) {
-                // 向右偏移旋转
-                currentX += 1;
-                currentPiece.shape = rotatedShape;
-            }
-
-            draw();  // 重新绘制
-        }
-
-        /**
-         * 方块自动下落
-         * 每隔指定时间执行一次
-         */
-        function drop() {
-            move(0, 1);  // 向下移动一格
-        }
-
-        /**
-         * 重置游戏
-         * 清空面板、分数和定时器，准备新游戏
-         */
-        function resetGame() {
-            score = 0;  // 重置分数
-            document.getElementById('score').textContent = score;  // 更新分数显示
-            initBoard();  // 初始化面板
-            generatePiece();  // 生成第一个方块
-            draw();  // 绘制初始状态
-
-            // 重新启动游戏定时器
-            if (gameInterval) clearInterval(gameInterval);  // 清除旧定时器
-            gameInterval = setInterval(drop, dropSpeed);  // 设置新定时器
-        }
-
-        /**
-         * 键盘事件监听器
-         * 处理玩家输入控制方块移动和旋转
-         */
-        document.addEventListener('keydown', (e) => {
-            switch (e.key) {
-                case 'ArrowLeft':  // 左箭头：向左移动
-                    move(-1, 0);
-                    break;
-                case 'ArrowRight':  // 右箭头：向右移动
-                    move(1, 0);
-                    break;
-                case 'ArrowDown':  // 下箭头：向下移动（加速下降）
-                    move(0, 1);
-                    break;
-                case 'ArrowUp':  // 上箭头：旋转方块
-                    rotate();
-                    break;
-            }
-        });
-
-        /**
-         * 页面加载完成后初始化游戏
-         */
-        window.onload = () => {
-            resetGame();  // 开始新游戏
+        // 定义不同稀有度的颜色和配置
+        // 3星: 蓝色, 4星: 紫色, 5星: 金色
+        const rarityConfig = {
+            3: { color: '#38b6ff', stars: '★★★', bg: 'radial-gradient(circle, #1a2a38 0%, #1a1c24 80%)' },
+            4: { color: '#d068ff', stars: '★★★★', bg: 'radial-gradient(circle, #2d1a38 0%, #1a1c24 80%)' },
+            5: { color: '#ffd700', stars: '★★★★★', bg: 'radial-gradient(circle, #4a3e28 0%, #1a1c24 80%)' }
         };
+
+        // 处理 Excel 导入
+        function importExcel(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // 读取第一个工作表
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                // 转换为 JSON (数组)
+                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                // 提取第一列数据 (过滤空值)
+                let nameList = [];
+                json.forEach(row => {
+                    if (row[0]) nameList.push(row[0]);
+                });
+
+                if (nameList.length > 0) {
+                    document.getElementById('names').value = nameList.join('\n');
+                    alert(`成功导入 ${nameList.length} 个名字！`);
+                } else {
+                    alert('Excel 中没有找到有效数据，请检查第一列。');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 获取随机稀有度 (模拟抽卡概率)
+        function getRandomRarity() {
+            const rand = Math.random() * 100;
+            if (rand < 5) return 5;   // 5% 概率金光
+            if (rand < 25) return 4;  // 20% 概率紫光
+            return 3;                 // 75% 概率蓝光
+        }
+
+        function startWish() {
+            const input = document.getElementById('names').value;
+            const nameList = input.split('\n').filter(n => n.trim() !== '');
+
+            if (nameList.length === 0) {
+                alert('名单为空！请先输入名字或导入 Excel。');
+                return;
+            }
+
+            // 1. 抽人逻辑
+            const winner = nameList[Math.floor(Math.random() * nameList.length)];
+
+            // 2. 决定稀有度颜色
+            const rarityLevel = getRandomRarity();
+            const config = rarityConfig[rarityLevel];
+
+            // 3. 应用颜色变量
+            document.documentElement.style.setProperty('--theme-color', config.color);
+            document.documentElement.style.setProperty('--bg-gradient', config.bg);
+
+            // 更新文本内容
+            document.getElementById('winner-text').innerText = winner;
+            document.getElementById('star-display').innerText = config.stars;
+
+            // 4. 开始动画流程
+            const inputScreen = document.getElementById('input-screen');
+            const animContainer = document.getElementById('animation-container');
+            const meteor = document.getElementById('meteor');
+            const flash = document.getElementById('flash');
+            const resultScreen = document.getElementById('result-screen');
+            const resultCard = document.getElementById('result-card');
+            const winnerText = document.getElementById('winner-text');
+            const stars = document.getElementById('star-display');
+
+            // 隐藏 UI
+            inputScreen.style.opacity = 0;
+            setTimeout(() => inputScreen.style.display = 'none', 500);
+
+            // 显示动画层
+            animContainer.style.opacity = 1;
+            animContainer.style.zIndex = 20;
+
+            // --- 阶段一：流星划过 ---
+            meteor.style.display = 'block';
+            // 重置动画
+            meteor.style.animation = 'none';
+            meteor.offsetHeight; /* trigger reflow */
+            meteor.style.animation = 'shoot 1.2s ease-in forwards';
+
+            // --- 阶段二：撞击白屏 ---
+            setTimeout(() => {
+                flash.style.opacity = 1;
+                flash.style.transition = 'opacity 0.1s';
+            }, 1100);
+
+            // --- 阶段三：结果展示 ---
+            setTimeout(() => {
+                meteor.style.display = 'none';
+
+                flash.style.opacity = 0;
+                flash.style.transition = 'opacity 1s';
+
+                animContainer.style.zIndex = -1;
+                resultScreen.style.display = 'flex';
+
+                requestAnimationFrame(() => {
+                    resultScreen.style.opacity = 1;
+
+                    // 卡片动画
+                    resultCard.style.opacity = 1;
+                    resultCard.style.animation = 'none';
+                    resultCard.offsetHeight;
+                    resultCard.style.animation = 'cardReveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards';
+
+                    // 文字显现
+                    winnerText.style.opacity = 0;
+                    stars.style.opacity = 0;
+
+                    setTimeout(() => {
+                        winnerText.style.animation = 'textFadeIn 0.5s ease-out forwards';
+                        stars.style.animation = 'textFadeIn 0.5s ease-out 0.2s forwards';
+                    }, 600);
+                });
+
+            }, 1300);
+        }
+
+        function resetSystem() {
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('result-screen').style.opacity = 0;
+
+            document.getElementById('input-screen').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('input-screen').style.opacity = 1;
+            }, 10);
+
+            document.getElementById('animation-container').style.opacity = 0;
+
+            // 简单的防呆，重置卡片状态
+            const resultCard = document.getElementById('result-card');
+            resultCard.style.width = '0px';
+        }
     </script>
 </body>
 

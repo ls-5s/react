@@ -796,3 +796,156 @@ export default function Counter() {
 ```
 
 ## 更新 state 中的对象
+state 中可以保存任意类型的 JavaScript 值，包括对象。但是，你不应该直接修改存放在 React state 中的对象。相反，当你想要更新一个对象时，你需要创建一个新的对象（或者将其拷贝一份），然后将 state 更新为此对象。
+
+**将 state 视为只读的**
+换句话说，你应该 把所有存放在 state 中的 JavaScript 对象都视为只读的。
+```jsx
+import { useState } from 'react';
+
+export default function MovingDot() {
+  const [position, setPosition] = useState({
+    x: 0,
+    y: 0
+  });
+  return (
+    <div
+      onPointerMove={e => {
+        position.x = e.clientX;
+        position.y = e.clientY;
+      }}
+      style={{
+        position: 'relative',
+        width: '100vw',
+        height: '100vh',
+      }}>
+      <div style={{
+        position: 'absolute',
+        backgroundColor: 'red',
+        borderRadius: '50%',
+        transform: `translate(${position.x}px, ${position.y}px)`,
+        left: -10,
+        top: -10,
+        width: 20,
+        height: 20,
+      }} />
+    </div>
+  );
+}
+
+```
+**使用展开语法复制对象**
+对于普通的对象更新，我们主要使用 ** 对象展开运算符（...）** 来创建新对象，这是 React 中最常用、最推荐的方式。
+```jsx
+import { useState } from 'react';
+
+function UserProfile() {
+  // 初始化 state 中的对象
+  const [user, setUser] = useState({
+    name: '张三',
+    age: 20,
+    info: {
+      city: '北京',
+      job: '前端开发'
+    }
+  });
+
+  // 场景1：更新单个属性（比如修改年龄）
+  const updateAge = () => {
+    // 🌟 关键：用展开运算符拷贝原对象，再覆盖需要更新的属性
+    setUser({
+      ...user, // 拷贝原对象的所有属性
+      age: 21 // 覆盖age属性，其他属性保持不变
+    });
+  };
+
+  // 场景2：更新多个属性（比如同时改名字和年龄）
+  const updateNameAndAge = () => {
+    setUser({
+      ...user,
+      name: '李四',
+      age: 22
+    });
+  };
+// 如果对象是嵌套结构（比如 user.info.city），需要逐层拷贝，不能只拷贝顶层，
+// 否则嵌套的对象还是原引用（会导致 React 无法检测变化）。
+// 接上面的函数式组件示例，添加更新嵌套属性的方法
+const updateCity = () => {
+  setUser({
+    ...user, // 拷贝顶层对象
+    info: {
+      ...user.info, // 拷贝嵌套的info对象
+      city: '上海' // 覆盖city属性
+    }
+  });
+};
+  return (
+    <div>
+      <p>姓名：{user.name}</p>
+      <p>年龄：{user.age}</p>
+      <p>城市：{user.info.city}</p>
+      <button onClick={updateAge}>增加年龄</button>
+      <button onClick={updateNameAndAge}>修改姓名和年龄</button>
+    </div>
+  );
+}
+
+export default UserProfile;
+```
+**使用 Immer 编写简洁的更新逻辑**
+如果你的 state 有多层的嵌套，你或许应该考虑 将其扁平化。但是，如果你不想改变 state 的数据结构，你可能更喜欢用一种更便捷的方式来实现嵌套展开的效果。Immer 是一个非常流行的库，它可以让你使用简便但可以直接修改的语法编写代码，并会帮你处理好复制的过程。通过使用 Immer，你写出的代码看起来就像是你“打破了规则”而直接修改了对象：
+
+==================================================
+
+尝试使用 Immer:
+运行 npm install use-immer 添加 Immer 依赖
+用 import { useImmer } from 'use-immer' 替换掉 import { useState } from 'react'
+
+===================================================
+
+**代码导入**
+```jsx
+import { useImmer } from 'use-immer';
+
+export default function Form() {
+  const [person, updatePerson] = useImmer({
+    name: 'Niki de Saint Phalle',
+    artwork: {
+      title: 'Blue Nana',
+      city: 'Hamburg',
+      image: 'https://i.imgur.com/Sd1AgUOm.jpg',
+    }
+  });
+
+  function handleNameChange(e) {
+    updatePerson(draft => {
+      draft.name = e.target.value;
+    });
+  }
+
+  function handleTitleChange(e) {
+    updatePerson(draft => {
+      draft.artwork.title = e.target.value;
+    });
+  }
+
+  function handleCityChange(e) {
+    updatePerson(draft => {
+      draft.artwork.city = e.target.value;
+    });
+  }
+
+  function handleImageChange(e) {
+    updatePerson(draft => {
+      draft.artwork.image = e.target.value;
+    });
+  }
+
+  return (
+    <>
+     
+    </>
+  );
+}
+
+```
