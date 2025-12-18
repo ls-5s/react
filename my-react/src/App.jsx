@@ -1,15 +1,17 @@
-import {useState} from 'react'
+import { useState } from "react";
+let arr = [
+  0,0,0
+]
 function App() {
-  const [index,setIndex] = useState(0)
-    function arr() {
-      setIndex(index + 1)
+  const [count, setCount] = useState(arr);
+  function handleClick(index) {
+    setCount(count.map((item, i) => i === index ? item + 1 : item));
   }
   return (
-    <div>
-    <button onClick={arr}> 点击； </button>
-   <div>{index}</div>
-</div>
+    <div> 
+      <button onClick={() => handleClick(0)}>{count[0]}</button>
+    </div>
   )
 }
 
-export default App
+export default App;

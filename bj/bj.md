@@ -949,3 +949,284 @@ export default function Form() {
 }
 
 ```
+## 更新 state 中的数组
+数组是另外一种可以存储在 state 中的 JavaScript 对象，它虽然是可变的，但是却应该被视为不可变。同对象一样，当你想要更新存储于 state 中的数组时，你需要创建一个新的数组（或者创建一份已有数组的拷贝值），并使用新数组设置 state。
+**向数组中添加元素**
+```jsx
+import { useState } from 'react';
+let nextId = 0；
+export default function List() { 
+
+  const [name, setName] = useState('');
+  const [roster, setRoster] = useState([]);
+  const rosterList = () => {
+    setRoster([...roster, { id: nextId++, name: name }])
+    setName('');
+  }
+  return (
+    <>
+      <input value={name} onChange={e => setName(e.target.value)} />
+      <button onClick={rosterList}>Add</button>
+      <ul>
+              {artists.map(artist => (
+          <li key={artist.id}>{artist.name}</li>
+        ))}
+        </ul>
+      </>
+  )
+}
+
+数组展开运算符还允许你把新添加的元素放在原始的 ...artists 之前：
+
+setArtists([
+  { id: nextId++, name: name },
+  ...artists // 将原数组中的元素放在末尾
+]);
+```
+**从数组中删除元素**
+从数组中删除一个元素最简单的方法就是将它过滤出去。换句话说，你需要生成一个不包含该元素的新数组。这可以通过 filter 方法实现，例如：
+```jsx
+import { useState } from 'react';
+
+let nextId = 0;
+
+export default function List() {
+  const [name, setName] = useState('');
+  const [artists, setArtists] = useState([]);
+
+  const addArtist = () => {
+    if (!name.trim()) return;
+    setArtists(prev => [...prev, { id: nextId++, name }]);
+    setName('');
+  };
+
+  // 按id删除元素：使用filter创建新数组
+  const removeArtist = (idToRemove) => {
+    // filter返回所有id不等于要删除id的元素，形成新数组
+    setArtists(prev => prev.filter(artist => artist.id !== idToRemove));
+  };
+
+  return (
+    <>
+      <h1>振奋人心的雕塑家们：</h1>
+      <input value={name} onChange={e => setName(e.target.value)} />
+      <button onClick={addArtist}>添加</button>
+      <ul>
+        {artists.map(artist => (
+          <li key={artist.id}>
+            {artist.name}
+            {/* 点击按钮删除当前元素，传入对应id */}
+            <button onClick={() => removeArtist(artist.id)} style={{ marginLeft: '8px' }}>
+              删除
+            </button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+```
+**替换数组中的元素**
+想要替换数组中一个或多个元素是非常常见的。类似 arr[0] = 'bird' 这样的赋值语句会直接修改原始数组，所以在这种情况下，你也应该使用 map。
+
+要替换一个元素，请使用 map 创建一个新数组。在你的 map 回调里，第二个参数是元素的索引。使用索引来判断最终是返回原始的元素（即回调的第一个参数）还是替换成其他值：
+
+```jsx
+import { useState } from "react";
+let arr = [
+  0,0,0
+]
+function App() {
+  const [count, setCount] = useState(arr);
+  function handleClick(index) {
+    setCount(count.map((item, i) => i === index ? item + 1 : item));
+  }
+  return (
+    <div> 
+      <button onClick={() => handleClick(0)}>{count[0]}</button>
+    </div>
+  )
+}
+
+export default App;
+```
+**向数组中插入元素**
+有时，你也许想向数组特定位置插入一个元素，这个位置既不在数组开头，也不在末尾。为此，你可以将数组展开运算符 ... 和 slice() 方法一起使用。slice() 方法让你从数组中切出“一片”。为了将元素插入数组，你需要先展开原数组在插入点之前的切片，然后插入新元素，最后展开原数组中剩下的部分。
+下面的例子中，插入按钮总是会将元素插入到数组中索引为 1 的位置。
+```jsx
+import { useState } from 'react';
+
+let nextId = 3;
+const initialArtists = [
+  { id: 0, name: 'Marta Colvin Andrade' },
+  { id: 1, name: 'Lamidi Olonade Fakeye'},
+  { id: 2, name: 'Louise Nevelson'},
+];
+
+export default function List() {
+  const [name, setName] = useState('');
+  const [artists, setArtists] = useState(
+    initialArtists
+  );
+
+  function handleClick() {
+    const insertAt = 1; // 可能是任何索引
+    const nextArtists = [
+      // 插入点之前的元素：
+      ...artists.slice(0, insertAt),
+      // 新的元素：
+      { id: nextId++, name: name },
+      // 插入点之后的元素：
+      ...artists.slice(insertAt)
+    ];
+    setArtists(nextArtists);
+    setName('');
+  }
+
+  return (
+    <>
+      <h1>振奋人心的雕塑家们：</h1>
+      <input
+        value={name}
+        onChange={e => setName(e.target.value)}
+      />
+      <button onClick={handleClick}>
+        插入
+      </button>
+      <ul>
+        {artists.map(artist => (
+          <li key={artist.id}>{artist.name}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+```
+**其他改变数组的情况**
+总会有一些事，是你仅仅依靠展开运算符和 map() 或者 filter() 等不会直接修改原值的方法所无法做到的。例如，你可能想翻转数组，或是对数组排序。而 JavaScript 中的 reverse() 和 sort() 方法会改变原数组，所以你无法直接使用它们。
+
+然而，你可以先拷贝这个数组，再改变这个拷贝后的值。
+翻转数组的例子：
+```jsx
+import { useState } from 'react';
+
+const initialList = [
+  { id: 0, title: 'Big Bellies' },
+  { id: 1, title: 'Lunar Landscape' },
+  { id: 2, title: 'Terracotta Army' },
+];
+
+export default function List() {
+  const [list, setList] = useState(initialList);
+
+  function handleClick() {
+    const nextList = [...list];
+    nextList.reverse();
+    setList(nextList);
+  }
+
+  return (
+    <>
+      <button onClick={handleClick}>
+        翻转
+      </button>
+      <ul>
+        {list.map(artwork => (
+          <li key={artwork.id}>{artwork.title}</li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+```
+**更新数组内部的对象**
+对象并不是 真的 位于数组“内部”。可能他们在代码中看起来像是在数组“内部”，但其实数组中的每个对象都是这个数组“指向”的一个存储于其它位置的值。这就是当你在处理类似 list[0] 这样的嵌套字段时需要格外小心的原因。其他人的艺术品清单可能指向了数组的同一个元素！
+
+当你更新一个嵌套的 state 时，你需要从想要更新的地方创建拷贝值，一直这样，直到顶层。 让我们看一下这该怎么做。
+
+在下面的例子中，两个不同的艺术品清单有着相同的初始 state。他们本应该互不影响，但是因为一次 mutation，他们的 state 被意外地共享了，勾选一个清单中的事项会影响另外一个清单：
+```jsx
+import { useState } from 'react';
+
+export default function TodoList() {
+  // 初始化状态：数组中包含多个对象（待办项）
+  const [items, setItems] = useState([
+    { id: 0, text: '学习React状态不可变原则', done: false },
+    { id: 1, text: '理解数组和对象的引用类型', done: false },
+    { id: 2, text: '编写代码样例测试', done: false },
+  ]);
+
+  // 你提问的handleToggle函数：切换待办项的完成状态
+  function handleToggle(id) {
+    // 1. 用map生成新数组（拷贝原数组，不修改原数组）
+    const newItems = items.map(item => {
+      // 2. 找到要修改的项，生成新对象（拷贝原对象属性，仅修改done）
+      if (item.id === id) {
+        return { ...item, done: !item.done }; // 核心：拷贝+修改
+      }
+      // 不需要修改的项，直接复用原对象（节省性能）
+      return item;
+    });
+    // 3. 用新数组更新状态
+    setItems(newItems);
+  }
+
+  return (
+    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+      <h2>待办清单（状态不可变示例）</h2>
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {items.map(item => (
+          <li 
+            key={item.id} 
+            style={{ 
+              margin: '10px 0', 
+              textDecoration: item.done ? 'line-through' : 'none',
+              color: item.done ? '#999' : '#333'
+            }}
+          >
+            {/* 点击复选框触发handleToggle，传递当前项的id */}
+            <input
+              type="checkbox"
+              checked={item.done}
+              onChange={() => handleToggle(item.id)}
+              style={{ marginRight: '10px' }}
+            />
+            {item.text}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+**摘要**
+- 你可以把数组放入 state 中，但你不应该直接修改它。
+- 不要直接修改数组，而是创建它的一份 新的 拷贝，然后使用新的数组来更新它的状态。
+- 你可以使用 [...arr, newItem] 这样的数组展开语法来向数组中添加元素。
+- 你可以使用 filter() 和 map() 来创建一个经过过滤或者变换的数组。
+- 你可以使用 Immer 来保持代码简洁。
+
+**使用 Immer 编写简洁的更新逻辑**
+在没有 mutation 的前提下更新嵌套数组可能会变得有点重复。就像对对象一样:
+
+通常情况下，你应该不需要更新处于非常深层级的 state 。如果你有此类需求，你或许需要调整一下数据的结构，让数据变得扁平一些。
+如果你不想改变 state 的数据结构，你也许会更喜欢使用 Immer ，它让你可以继续使用方便的，但会直接修改原值的语法，并负责为你生成拷贝值。
+下面是我们用 Immer 来重写的艺术愿望清单的例子：
+```jsx
+import {useState} from 'react';
+import {useImmer} from 'use-immer';
+export default function TodoList() { 
+  const [items, updateItems] = useImmer([])
+  const [text, setText] = useState('')
+  function handleAddItem() { 
+    updateItems(draft => { 
+      draft.push({text: text, id: draft.length})
+    })
+    setText('')
+  }
+  return (
+   button onClick={handleAddItem}> add </button>
+  )
+}
+```
