@@ -1230,3 +1230,62 @@ export default function TodoList() {
   )
 }
 ```
+# 状态管理
+## 用 State 响应输入
+**React 声明式 UI 编程的核心步骤**
+React 的声明式 UI 编程遵循 **“数据驱动视图”** 的逻辑，核心步骤可以总结为以下 5 步：
+- 步骤 1：定义 UI 的状态（State）
+状态是驱动 UI 变化的核心数据，是 UI 的 “数据源”。你需要先确定 UI 中哪些部分是动态的，这些动态部分对应的数据就是状态。
+- 步骤 2：根据状态描述 UI 结构（声明 UI）
+不再手动操作 DOM，而是使用 JSX（React 的语法糖）根据当前的状态描述 UI 应该呈现的样子。这一步是 “声明式” 的核心 —— 只关注结果，不关注过程。
+- 步骤 3：绑定事件处理逻辑
+为 UI 元素添加交互事件（如点击、输入），在事件处理函数中修改状态（注意：不能直接修改状态，要使用 React 提供的状态更新方法）。
+- 步骤 4：React 自动更新 UI（核心：虚拟 DOM Diff）
+当状态发生变化时，React 会重新渲染组件（根据新状态生成新的虚拟 DOM），然后通过虚拟 DOM 的 Diff 算法对比新旧虚拟 DOM 的差异，最后只把差异部分更新到真实 DOM 中。这一步是 React 自动完成的，你无需关心。
+- 步骤 5：处理副作用（可选）
+如果有需要和外部系统交互的逻辑（如请求数据、操作本地存储、手动操作 DOM），需要在副作用钩子（如useEffect）中处理，避免影响组件的渲染逻辑。
+
+**React 声明式 UI 编程案例**
+
+案例 1：基础计数器（入门级）
+这个案例包含状态定义、UI 声明、事件绑定和自动更新，是最基础的声明式 UI 示例。
+```jsx
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+
+// 定义计数器组件（声明式UI的核心载体）
+function Counter() {
+  // 步骤1：定义状态（count是当前状态，setCount是更新状态的方法，初始值为0）
+  const [count, setCount] = useState(0);
+
+  // 步骤3：定义事件处理函数（点击按钮时更新状态）
+  const handleIncrement = () => {
+    setCount(count + 1); // 修改状态，React会自动更新UI
+  };
+
+  const handleDecrement = () => {
+    setCount(count - 1);
+  };
+
+  // 步骤2：根据状态声明UI结构（JSX描述UI“长什么样”，依赖count状态）
+  return (
+    <div style={{ padding: '20px', fontSize: '20px' }}>
+      <h2>计数器（声明式UI）</h2>
+      <p>当前计数：{count}</p>
+      <button onClick={handleIncrement} style={{ marginRight: '10px' }}>
+        +1
+      </button>
+      <button onClick={handleDecrement}>-1</button>
+    </div>
+  );
+}
+
+// 渲染组件到真实DOM
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<Counter />);
+```
+代码解释
+
+useState(0)：React 的状态钩子，用于在函数组件中定义状态，初始计数为 0。
+JSX 部分：直接用{count}将状态嵌入 UI，描述了 “计数是 count 时，UI 应该显示这个数值”，这就是声明式的体现。
+点击按钮时，调用setCount修改状态，React 会自动重新渲染组件，更新页面上的计数，你不需要手动获取 DOM 元素并修改其内容（这是命令式的操作）。
