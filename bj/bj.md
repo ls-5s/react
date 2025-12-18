@@ -1289,3 +1289,221 @@ root.render(<Counter />);
 useState(0)：React 的状态钩子，用于在函数组件中定义状态，初始计数为 0。
 JSX 部分：直接用{count}将状态嵌入 UI，描述了 “计数是 count 时，UI 应该显示这个数值”，这就是声明式的体现。
 点击按钮时，调用setCount修改状态，React 会自动重新渲染组件，更新页面上的计数，你不需要手动获取 DOM 元素并修改其内容（这是命令式的操作）。
+
+## 选择 State 结构
+构建良好的 state 可以让组件变得易于修改和调试，而不会经常出错。以下是你在构建 state 时应该考虑的一些建议。
+**构建 state 的原则**
+- 合并关联的 state
+```jsx 
+const [x, setX] = useState(0);
+const [y, setY] = useState(0);
+
+换成
+const [position,, setPosition] = useState({x:0,y:0})
+```
+如果某两个 state 变量总是一起变化，则将它们统一成一个 state 变量可能更好
+
+**注意**
+如果你的 state 变量是一个对象时，请记住，你不能只更新其中的一个字段 而不显式复制其他字段。例如，在上面的例子中，你不能写成 setPosition({ x: 100 })，因为它根本就没有 y 属性! 相反，如果你想要仅设置 x，则可执行 setPosition({ ...position, x: 100 })，或将它们分成两个 state 变量，并执行 setX(100)。
+- 避免矛盾的 state
+```jsx
+场景 1：简单场景（年龄与是否成年）
+① 有矛盾的原始代码（问题版）
+jsx
+import { useState } from 'react';
+
+function UserAge() {
+  // 核心state：age
+  const [age, setAge] = useState(17);
+  // 冗余state：isAdult（可由age推导），这是矛盾根源
+  const [isAdult, setIsAdult] = useState(false);
+
+  const increaseAge = () => {
+    const newAge = age + 1;
+    setAge(newAge);
+    // 手动同步，容易忘记或出错
+    // setIsAdult(newAge >= 18);
+  };
+
+  return (
+    <div>
+      <p>年龄：{age}</p>
+      <p>是否成年：{isAdult ? '是' : '否'}</p>
+      <button onClick={increaseAge}>增加年龄</button>
+    </div>
+  );
+}
+```
+② 改造步骤（按三步法来）
+**识别**：核心 state 是age，冗余 state 是isAdult（isAdult = age >= 18）。
+**移除冗余 state**：删除const [isAdult, setIsAdult] = useState(false);，替换为const isAdult = age >= 18;。
+**简化更新逻辑**：删除setIsAdult(newAge >= 18);，只保留更新age的逻辑。
+③ 改造后的无矛盾代码
+```jsx
+import { useState } from 'react';
+
+function UserAge() {
+  // 只保留核心state
+  const [age, setAge] = useState(17);
+  // 派生数据：实时计算，无冗余
+  const isAdult = age >= 18;
+
+  const increaseAge = () => {
+    // 只更新核心state，逻辑极简
+    setAge(age + 1);
+  };
+
+  return (
+    <div>
+      <p>年龄：{age}</p>
+      <p>是否成年：{isAdult ? '是' : '否'}</p>
+      <button onClick={increaseAge}>增加年龄</button>
+    </div>
+  );
+}
+```
+- 避免冗余的 state 
+如果你能在渲染期间从组件的 props 或其现有的 state 变量中计算出一些信息，则不应该把这些信息放到该组件的 state 中。
+这个表单有三个 state 变量：firstName、lastName 和 fullName。然而，fullName 是多余的。在渲染期间，你始终可以从 firstName 和 lastName 中计算出 fullName，因此需要把它从 state 中删除。
+```jsx
+import { useState } from 'react';
+
+export default function Form() {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+
+  const fullName = firstName + ' ' + lastName;
+
+  function handleFirstNameChange(e) {
+    setFirstName(e.target.value);
+  }
+
+  function handleLastNameChange(e) {
+    setLastName(e.target.value);
+  }
+
+  return (
+    <>
+      <h2>Let’s check you in</h2>
+      <label>
+        First name:{' '}
+        <input
+          value={firstName}
+          onChange={handleFirstNameChange}
+        />
+      </label>
+      <label>
+        Last name:{' '}
+        <input
+          value={lastName}
+          onChange={handleLastNameChange}
+        />
+      </label>
+      <p>
+        Your ticket will be issued to: <b>{fullName}</b>
+      </p>
+    </>
+  );
+}
+```
+- 避免重复的 state
+```jsx
+import { useState } from 'react';
+
+// 初始零食数据
+const initialItems = [
+  { title: 'pretzels', id: 0 },
+  { title: 'crispy seaweed', id: 1 },
+  { title: 'granola bar', id: 2 },
+];
+
+export default function Menu() {
+  // 核心state：仅保留items（列表数据）和selectedId（选中项的id），无重复state
+  const [items, setItems] = useState(initialItems);
+  const [selectedId, setSelectedId] = useState(0);
+
+  // 派生数据：通过selectedId推导选中项，不存储为state（避免重复）
+  const selectedItem = items.find(item => item.id === selectedId);
+
+  return (
+    <>
+      <h2>What's your travel snack?</h2>
+      <ul>
+        {items.map(item => (
+          <li key={item.id}>
+            <input
+              value={item.title}
+              {/* 内联更新逻辑，简化handleItemChange函数 */}
+              onChange={(e) => {
+                setItems(
+                  items.map(i => 
+                    i.id === item.id ? { ...i, title: e.target.value } : i
+                  )
+                );
+              }}
+            />
+            {' '}
+            <button onClick={() => setSelectedId(item.id)}>Choose</button>
+          </li>
+        ))}
+      </ul>
+      {/* 增加可选链保护，避免极端情况（如items为空）报错 */}
+      <p>You picked {selectedItem?.title}.</p>
+    </>
+  );
+}
+```
+**避免深度嵌套的 state**
+
+怎么去解决 
+```jsx
+import { useState } from 'react';
+import { produce } from 'immer'; // 导入Immer的produce函数
+
+function UserInfo() {
+  // 保留嵌套state，但用Immer简化更新
+  const [user, setUser] = useState({
+    name: '张三',
+    address: {
+      province: '北京',
+      city: '北京市',
+      details: {
+        street: '朝阳路',
+        number: '100号'
+      }
+    }
+  });
+
+  // 修改街道：用produce实现“可变”写法，Immer自动处理不可变性
+  const changeStreet = () => {
+    setUser(
+      produce(draft => {
+        // draft是草稿对象，可直接修改嵌套属性
+        draft.address.details.street = '建国路';
+      })
+    );
+  };
+
+  return (
+    <div>
+      <p>姓名：{user.name}</p>
+      <p>地址：{user.address.province} {user.address.city} {user.address.details.street} {user.address.details.number}</p>
+      <button onClick={changeStreet}>修改街道</button>
+    </div>
+  );
+}
+```
+useImmer是 Immer 团队为 React 开发的专属钩子，它的底层其实就是封装了useState + produce，是一种语法糖。简单来说：
+```jsx
+// useImmer的底层逻辑（简化版）
+import { useState } from 'react';
+import { produce } from 'immer';
+
+function useImmer(initialState) {
+  const [state, setState] = useState(initialState);
+  const setImmerState = (updater) => {
+    setState(produce(updater));
+  };
+  return [state, setImmerState];
+}
+```
