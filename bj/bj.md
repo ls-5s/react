@@ -1507,3 +1507,99 @@ function useImmer(initialState) {
   return [state, setImmerState];
 }
 ```
+## 在组件间共享状态
+
+有时候，你希望两个组件的状态始终同步更改。要实现这一点，可以将相关 state 从这两个组件上移除，并把 state 放到它们的公共父级，再通过 props 将 state 传递给这两个组件。这被称为“状态提升”，这是编写 React 代码时常做的事。
+
+- 举例说明一下状态提升 
+```jsx
+import { useState } from 'react';
+
+function Panel({ title, children }) {
+  const [isActive, setIsActive] = useState(false);
+  return (
+    <section className="panel">
+      <h3>{title}</h3>
+      {isActive ? (
+        <p>{children}</p>
+      ) : (
+        <button onClick={() => setIsActive(true)}>
+          显示
+        </button>
+      )}
+    </section>
+  );
+}
+
+export default function Accordion() {
+  return (
+    <>
+      <h2>哈萨克斯坦，阿拉木图</h2>
+      <Panel title="关于">
+        阿拉木图人口约200万，是哈萨克斯坦最大的城市。它在 1929 年到 1997 年间都是首都。
+      </Panel>
+      <Panel title="词源">
+        这个名字来自于 <span lang="kk-KZ">алма</span>，哈萨克语中“苹果”的意思，经常被翻译成“苹果之乡”。事实上，阿拉木图的周边地区被认为是苹果的发源地，<i lang="la">Malus sieversii</i> 被认为是现今苹果的祖先。
+      </Panel>
+    </>
+  );
+}
+这个里面的两个主键没有联系，所以无法共享state
+```
+
+你总结的核心思路是完全正确的！可以简化理解为：父组件管状态和状态更新的逻辑（事件），子组件接收这些内容，再通过点击等交互触发对应的事件。不过我们可以把这个过程拆得更精准一点，让你更清晰地对应到代码逻辑中。
+更精准的表述：父组件与子组件的分工
+
+1. 父组件的核心工作（“管状态 + 提供更新方法”）
+管状态：声明共享状态（比如activeIndex），这是所有子组件需要同步的数据源。
+提供更新方法：通过setXxx（比如setActiveIndex）或自定义函数，定义修改状态的逻辑（你说的 “事件” 本质是这个更新逻辑），并通过 props 把 “触发这个逻辑的方法” 传递给子组件。
+注意：父组件不直接处理子组件的点击事件，而是提供 “点击后要执行的逻辑”。
+2. 子组件的核心工作（“接收 props + 触发事件”）
+接收 props：从父组件拿到两个关键内容：
+基于共享状态推导的渲染数据（比如isActive，用于决定子组件显示什么）；
+父组件提供的状态更新方法（比如onShow，用于触发状态修改）。
+触发事件：在用户交互时（比如点击按钮），调用父组件传递的更新方法，间接让父组件修改共享状态。
+用代码对应这个分工（一目了然）
+```jsx
+// 父组件：管状态 + 提供更新方法
+function Accordion() {
+  // 1. 管状态：声明共享状态
+  const [activeIndex, setActiveIndex] = useState(null);
+
+  return (
+    <>
+      {/* 2. 提供更新方法：把isActive（渲染数据）和onShow（更新方法）传给子组件 */}
+      <Panel 
+        isActive={activeIndex === 0}
+        onShow={() => setActiveIndex(0)} // 这是父组件提供的更新逻辑
+        title="关于"
+      >
+        阿拉木图人口约200万...
+      </Panel>
+      <Panel 
+        isActive={activeIndex === 1}
+        onShow={() => setActiveIndex(1)}
+        title="词源"
+      >
+        这个名字来自于 алма...
+      </Panel>
+    </>
+  );
+}
+
+// 子组件：接收props + 触发事件
+function Panel({ isActive, onShow, title, children }) {
+  return (
+    <section>
+      <h3>{title}</h3>
+      {/* 1. 接收props：用isActive决定渲染内容 */}
+      {isActive ? (
+        <p>{children}</p>
+      ) : (
+        // 2. 触发事件：点击按钮时调用父组件的onShow方法
+        <button onClick={onShow}>显示</button>
+      )}
+    </section>
+  );
+}
+```
