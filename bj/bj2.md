@@ -1708,3 +1708,4 @@ function UserDetail() {
 
 ```
 # api
+# zustand(store)

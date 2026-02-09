@@ -21,6 +21,7 @@ import { ProtectedRoute, Loading } from '../components';
 // 基础页面
 const Home = lazy(() => import('../pages/Home'));
 const NotFound = lazy(() => import('../pages/NotFound'));
+const StoreExample = lazy(() => import('../components/StoreExample'));
 
 // 管理后台页面
 const AdminLayout = lazy(() => import('../pages/Admin/AdminLayout'));
@@ -57,6 +58,19 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<Loading />}>
             <Home />
+          </Suspense>
+        ),
+      },
+      
+      /**
+       * Zustand Store 示例页面
+       * 路径: /store-example
+       */
+      {
+        path: 'store-example',
+        element: (
+          <Suspense fallback={<Loading />}>
+            <StoreExample />
           </Suspense>
         ),
       },

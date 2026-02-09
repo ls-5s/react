@@ -19,6 +19,9 @@ const Home: React.FC = () => {
             管理后台
           </Link>
         )}
+        <Link to="/store-example" style={{ marginRight: '1rem' }}>
+          Zustand Store 示例
+        </Link>
       </div>
     </div>
   );
