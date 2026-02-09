@@ -1,6 +1,7 @@
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-function PostDetail() {
+const PostDetail: React.FC = () => {
   const { id, slug } = useParams<{ id: string; slug: string }>();
   const navigate = useNavigate();
 
@@ -13,7 +14,7 @@ function PostDetail() {
       <p>这里是文章的详细内容...</p>
     </div>
   );
-}
+};
 
 export default PostDetail;
 

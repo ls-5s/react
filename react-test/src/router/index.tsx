@@ -5,16 +5,14 @@
  * 1. 懒加载：使用 React.lazy() 实现代码分割，提升首屏加载速度
  * 2. 嵌套路由：支持多层级路由结构
  * 3. 路由守卫：使用 ProtectedRoute 保护需要登录的路由
- * 4. 动态路由：支持路径参数（如 /user/:id）
- * 5. 路由重定向：使用 Navigate 实现自动跳转
- * 6. 404 处理：捕获所有未匹配的路由
+ * 4. 路由重定向：使用 Navigate 实现自动跳转
+ * 5. 404 处理：捕获所有未匹配的路由
  */
 
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import App from '../App';
-import ProtectedRoute from '../components/ProtectedRoute';
-import Loading from '../components/Loading';
+import { ProtectedRoute, Loading } from '../components';
 
 // ==================== 懒加载组件 ====================
 // 使用 React.lazy() 实现代码分割，只有在访问对应路由时才加载组件
@@ -22,18 +20,7 @@ import Loading from '../components/Loading';
 
 // 基础页面
 const Home = lazy(() => import('../pages/Home'));
-const About = lazy(() => import('../pages/About'));
-const Login = lazy(() => import('../pages/Login'));
 const NotFound = lazy(() => import('../pages/NotFound'));
-
-// 用户中心相关页面
-const UserLayout = lazy(() => import('../pages/User/UserLayout'));
-const UserProfile = lazy(() => import('../pages/User/Profile'));
-const UserSettings = lazy(() => import('../pages/User/Settings'));
-const UserPosts = lazy(() => import('../pages/User/Posts'));
-
-// 文章相关页面
-const PostDetail = lazy(() => import('../pages/Post/PostDetail'));
 
 // 管理后台页面
 const AdminLayout = lazy(() => import('../pages/Admin/AdminLayout'));
@@ -74,152 +61,23 @@ export const router = createBrowserRouter([
         ),
       },
       
-      /**
-       * 关于页面
-       * 路径: /about
-       */
-      
-      {
-        path: 'about',
-        element: (
-          <Suspense fallback={<Loading />}>
-            <About />
-          </Suspense>
-        ),
-      },
-      
-      /**
-       * 登录页面
-       * 路径: /login
-       * 登录成功后会自动跳转到之前想访问的页面
-       */
-      {
-        path: 'login',
-        element: (
-          <Suspense fallback={<Loading />}>
-            <Login />
-          </Suspense>
-        ),
-      },
       // ==================== 受保护路由（需要登录） ====================
-      
-      /**
-       * 用户中心 - 嵌套路由
-       * 路径: /user
-       * 
-       * ProtectedRoute 会检查用户是否已登录
-       * - 未登录：自动跳转到 /login，并保存当前路径
-       * - 已登录：正常显示页面
-       * 
-       * 嵌套路由说明：
-       * - UserLayout 作为父组件，包含导航栏等公共部分
-       * - children 中的路由会在 UserLayout 的 <Outlet /> 位置渲染
-       */
-      {
-        path: 'user',
-        element: (
-          <ProtectedRoute>
-            <Suspense fallback={<Loading />}>
-              <UserLayout />
-            </Suspense>
-          </ProtectedRoute>
-        ),
-        children: [
-          /**
-           * 默认路由：访问 /user 时自动重定向到 /user/profile
-           * replace: true 表示替换历史记录，而不是添加新记录
-           */
-          {
-            index: true,
-            element: <Navigate to="/user/profile" replace />,
-          },
-          /**
-           * 个人资料页面
-           * 路径: /user/profile
-           */
-          {
-            path: 'profile',
-            element: (
-              <Suspense fallback={<Loading />}>
-                <UserProfile />
-              </Suspense>
-            ),
-          },
-          /**
-           * 设置页面
-           * 路径: /user/settings
-           */
-          {
-            path: 'settings',
-            element: (
-              <Suspense fallback={<Loading />}>
-                <UserSettings />
-              </Suspense>
-            ),
-          },
-          /**
-           * 我的文章页面
-           * 路径: /user/posts
-           */
-          {
-            path: 'posts',
-            element: (
-              <Suspense fallback={<Loading />}>
-                <UserPosts />
-              </Suspense>
-            ),
-          },
-        ],
-      },
-      
-      /**
-       * 动态路由 - 查看其他用户资料
-       * 路径: /user/:id
-       * 
-       * :id 是路径参数，可以通过 useParams() 获取
-       * 示例：访问 /user/123，可以通过 useParams() 获取 { id: '123' }
-       * 
-       * 注意：这个路由在 /user 之后，所以不会匹配 /user/profile 等子路由
-       */
-      {
-        path: 'user/:id',
-        element: (
-          <Suspense fallback={<Loading />}>
-            <UserProfile />
-          </Suspense>
-        ),
-      },
-      /**
-       * 文章详情 - 多参数动态路由
-       * 路径: /posts/:id/:slug
-       * 
-       * 支持多个路径参数
-       * 示例：访问 /posts/123/my-article
-       * 可以通过 useParams() 获取 { id: '123', slug: 'my-article' }
-       * 
-       * slug 通常用于 SEO 友好的 URL
-       */
-      {
-        path: 'posts/:id/:slug',
-        element: (
-          <Suspense fallback={<Loading />}>
-            <PostDetail />
-          </Suspense>
-        ),
-      },
       
       /**
        * 管理后台 - 嵌套路由，需要登录权限
        * 路径: /admin
        * 
-       * 同样使用 ProtectedRoute 保护，只有登录用户才能访问
+       * ProtectedRoute 会检查用户是否已登录
+       * - 未登录：自动跳转到首页，并保存当前路径
+       * - 已登录：正常显示页面
+       * 
        * 如果需要更细粒度的权限控制（如管理员权限），
        * 可以在 ProtectedRoute 组件中添加角色检查逻辑
        */
       {
         path: 'admin',
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute redirectTo="/">
             <Suspense fallback={<Loading />}>
               <AdminLayout />
             </Suspense>
@@ -228,6 +86,7 @@ export const router = createBrowserRouter([
         children: [
           /**
            * 默认路由：访问 /admin 时自动重定向到 /admin/dashboard
+           * replace: true 表示替换历史记录，而不是添加新记录
            */
           {
             index: true,

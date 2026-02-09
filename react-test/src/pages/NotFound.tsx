@@ -1,6 +1,7 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 
-function NotFound() {
+const NotFound: React.FC = () => {
   return (
     <div style={{ textAlign: 'center', padding: '2rem' }}>
       <h1>404</h1>
@@ -8,7 +9,6 @@ function NotFound() {
       <Link to="/">返回首页</Link>
     </div>
   );
-}
+};
 
 export default NotFound;
-

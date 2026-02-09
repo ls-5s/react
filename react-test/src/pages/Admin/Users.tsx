@@ -1,6 +1,7 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 
-function Users() {
+const Users: React.FC = () => {
   const users = [
     { id: 1, name: '用户1' },
     { id: 2, name: '用户2' },
@@ -19,7 +20,6 @@ function Users() {
       </ul>
     </div>
   );
-}
+};
 
 export default Users;
-

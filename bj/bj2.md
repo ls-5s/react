@@ -16,18 +16,55 @@ pnpm lint     # ESLint 检查
 ## 目录结构
 
 ```
-react/
-├── src/
-│   ├── main.tsx    # 入口
-│   ├── App.tsx     # 根组件
-│   ├── App.css
-│   ├── index.css   # 全局样式
-│   └── assets/
-├── public/
-├── index.html
-├── vite.config.ts
-├── tsconfig.json
-└── package.json
+my-react-app/
+├── node_modules/      # 依赖包（不变）
+├── public/            # 静态资源（不变，可新增全局静态文件如img/fonts）
+│   └── img/           # 全局图片（如logo、背景图，不会被Webpack处理）
+├── src/               # 核心源码
+│   ├── api/           # 接口封装（对应Vue的src/api）
+│   │   ├── request.js # axios封装（拦截器、baseURL等）
+│   │   ├── user.js    # 用户相关接口
+│   │   └── post.js    # 文章相关接口
+│   ├── assets/        # 静态资源（会被Webpack处理，如图片、字体、全局样式）
+│   │   ├── img/       # 业务图片（如组件内用的图标、配图）
+│   │   ├── fonts/     # 字体文件
+│   │   └── styles/    # 全局样式（如reset.css、变量.scss）
+│   ├── components/    # 通用公共组件（全局复用，对应Vue的src/components）
+│   │   ├── Button/    # 组件按文件夹组织（单文件组件拆分）
+│   │   │   ├── index.js # 组件入口
+│   │   │   └── Button.css # 组件样式
+│   │   ├── Loading/   # 加载组件
+│   │   └── NavBar/    # 导航栏组件
+│   ├── hooks/         # 自定义Hooks（React特色，抽离复用的逻辑）
+│   │   ├── useApi.js  # 封装API调用的Hook
+│   │   └── useAuth.js # 封装权限校验的Hook
+│   ├── layouts/       # 布局组件（对应Vue的src/layouts）
+│   │   ├── RootLayout.js # 根布局（包含Outlet，对应路由的父布局）
+│   │   └── AdminLayout.js # 管理后台布局
+│   ├── pages/         # 页面组件（对应Vue的src/views）
+│   │   ├── Home/      # 首页（页面级组件，按文件夹组织）
+│   │   ├── About/     # 关于页
+│   │   ├── User/      # 用户中心模块
+│   │   │   ├── Profile.js # 用户资料页
+│   │   │   └── Settings.js # 用户设置页
+│   │   ├── Admin/     # 管理后台模块
+│   │   └── NotFound/  # 404页面
+│   ├── router/        # 路由配置（对应Vue的src/router）
+│   │   └── index.js   # 路由核心配置（createBrowserRouter）
+│   ├── store/         # 状态管理（如Redux/Recoil/Pinia，对应Vue的src/store）
+│   │   ├── slices/    # Redux Toolkit的切片
+│   │   └── index.js   # 状态仓库配置
+│   ├── utils/         # 工具函数（对应Vue的src/utils）
+│   │   ├── format.js  # 格式化工具（如时间、金额）
+│   │   └── storage.js # 本地存储工具（localStorage/sessionStorage）
+│   ├── App.js         # 根组件（挂载路由Outlet）
+│   ├── index.js       # 项目入口（挂载App到DOM）
+│   └── index.css      # 全局样式
+├── .env               # 环境变量（如开发环境API地址）
+├── .env.production    # 生产环境变量
+├── .gitignore         # git忽略配置
+├── package.json       # 依赖+脚本
+└── README.md          # 项目文档
 ```
 
 ## 技术栈
@@ -1314,7 +1351,9 @@ function AutoFocusInput() {
 }
 ```
 ## 使用 Effect 进行同步
-
+onMounted	useEffect(() => {}, [])	组件挂载后执行一次（初始化数据、调用 API）
+onUpdated	useEffect(() => {})	组件每次更新后执行（监听状态变化、DOM 更新后操作）
+onUnmounted	useEffect(() => { return () => { /* 清理 */ } }, [])	组件卸载前执行（取消请求、清除定时器）
 # 路由
 ## 路由的配置
 ```ts
@@ -1668,3 +1707,4 @@ function UserDetail() {
 }
 
 ```
+# api

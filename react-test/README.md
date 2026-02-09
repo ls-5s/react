@@ -33,6 +33,7 @@ npm run preview
 - React 18
 - TypeScript
 - Vite
+- Tailwind CSS
 - ESLint
 
 ## 项目目录结构
@@ -42,10 +43,10 @@ src/
 ├── assets/          # 静态资源（图片、字体等）
 │   ├── images/      # 图片资源
 │   └── fonts/       # 字体文件
+├── api/             # API 服务和数据请求
 ├── components/      # 通用可复用组件
 ├── hooks/           # 自定义 React Hooks
 ├── pages/           # 页面组件
-├── services/        # API 服务和数据请求
 ├── types/           # TypeScript 类型定义
 ├── utils/           # 工具函数
 ├── App.tsx          # 主应用组件
@@ -56,11 +57,11 @@ src/
 
 ## 目录说明
 
+- **api/**: 存放 API 请求相关代码（axios 封装、API 接口定义等）
 - **components/**: 存放可复用的 UI 组件
 - **pages/**: 存放页面级组件
 - **hooks/**: 存放自定义 React Hooks
 - **utils/**: 存放工具函数和辅助方法
 - **types/**: 存放 TypeScript 类型定义和接口
-- **services/**: 存放 API 请求相关代码
 - **assets/**: 存放静态资源文件（图片、字体等）
 

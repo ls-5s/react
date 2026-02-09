@@ -1,6 +1,7 @@
+import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 
-function AdminLayout() {
+const AdminLayout: React.FC = () => {
   return (
     <div>
       <h2>管理后台</h2>
@@ -12,7 +13,6 @@ function AdminLayout() {
       <Outlet />
     </div>
   );
-}
+};
 
 export default AdminLayout;
-

@@ -1,9 +1,4 @@
 // 统一导出类型定义
-// export interface User {
-//   id: number;
-//   name: string;
-//   email: string;
-// }
-
-// export type Status = 'pending' | 'success' | 'error';
+export type { ApiResponse, PaginatedResponse, RequestConfig } from './api';
+export type { User, LoginParams, LoginResponse, Post } from './api';
 
