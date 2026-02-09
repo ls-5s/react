@@ -1618,3 +1618,53 @@ Outlet 组件是子路由的渲染出口。
 在 Users 组件中使用 <Outlet />，当访问 /users/1 时，UserDetail 组件会渲染在 Users 组件内部。
 这非常适合实现侧边栏 + 内容区的布局。
 ## 路由的使用
+### 方式 1：声明式导航（<Link> / <NavLink>）—— 点击链接跳转
+```ts
+import {Link,NavLink} from 'react-router-dom'
+function Sum () {
+  return (
+    <Link to = "/about">1111 <Link>
+       <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : ''}>
+        关于我们
+      </NavLink>
+  }
+}
+// 配合CSS
+// .active { color: red; font-weight: bold; }
+```
+### 命令式导航
+```ts
+import {useNavigate} from "react-router-dom"
+
+export function Aboubt () {
+  const navigate = useNavigate()
+  const op = () => {
+    navigate('/about',{
+      state: {name:'qqq',age:11}
+    })
+  }
+  return (
+    <buttton onClick = {op}> 跳转 <button> 
+  )
+}
+
+// 目标页（/user/1，完整可运行）
+import { useLocation } from 'react-router-dom'; // import 移到顶部！
+function UserDetail() {
+  // 1. 获取当前路由的location对象（包含state、pathname等信息）
+  const location = useLocation();
+  
+  // 2. 解构state参数，加 || {} 避免state为undefined时报错
+  const { name, age } = location.state || {};
+  
+  // 3. 渲染获取到的参数
+  return (
+    <div>
+      <h1>用户1详情</h1>
+      <p>姓名：{name}</p> {/* 显示：张三 */}
+      <p>年龄：{age}</p> {/* 显示：20 */}
+    </div>
+  );
+}
+
+```
