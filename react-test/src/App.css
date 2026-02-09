@@ -9,6 +9,37 @@
   padding: 2rem;
 }
 
+.App nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+  flex-wrap: wrap;
+}
+
+.App nav a {
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: #646cff;
+  border-radius: 4px;
+  transition: background-color 0.25s;
+}
+
+.App nav a:hover {
+  background-color: #f0f0f0;
+}
+
+.App nav a.active {
+  background-color: #646cff;
+  color: white;
+}
+
+.App main {
+  min-height: 60vh;
+}
+
 .App-header {
   display: flex;
   flex-direction: column;

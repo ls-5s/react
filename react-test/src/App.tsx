@@ -1,28 +1,35 @@
-import { useState } from 'react'
-import './App.css'
+import { Outlet, NavLink } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { isAuthenticated, logout } = useAuth();
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>React + TypeScript</h1>
-        <div className="card">
-          <button onClick={() => setCount((count) => count + 1)}>
-            count is {count}
-          </button>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test HMR
-          </p>
-        </div>
-        <p className="read-the-docs">
-          Click on the Vite and React logos to learn more
-        </p>
-      </header>
+      <nav>
+        <NavLink to="/">首页</NavLink>
+        <NavLink to="/about">关于</NavLink>
+        {isAuthenticated ? (
+          <>
+            <NavLink to="/user">用户中心</NavLink>
+            <NavLink to="/admin">管理后台</NavLink>
+            <button onClick={logout} style={{ marginLeft: 'auto' }}>
+              登出
+            </button>
+          </>
+        ) : (
+          <NavLink to="/login" style={{ marginLeft: 'auto' }}>
+            登录
+          </NavLink>
+        )}
+      </nav>
+      <main>
+        <Outlet />
+      </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
 

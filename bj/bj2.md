@@ -1288,3 +1288,28 @@ function App() {
 
 export default App;
 ```
+# 脱围机制
+## 使用 ref 引用值
+```ts
+const ref = useRef(0);
+一般使用useState
+```
+## 使用 ref 操作 DOM
+```ts
+import { useRef, useEffect } from 'react';
+
+function AutoFocusInput() {
+  // 1. 创建ref容器，用于存储DOM节点
+  const inputRef = useRef(null);
+
+  // 2. 组件挂载后，拿到真实DOM节点并调用focus()
+  useEffect(() => {
+    // inputRef.current 就是React渲染出的<input>真实DOM节点
+    inputRef.current?.focus(); 
+  }, []);
+
+  // 3. 把ref绑定到需要操作的DOM元素上
+  return <input ref={inputRef} placeholder="页面加载后自动聚焦我" />;
+}
+```
+## 使用 Effect 进行同步
