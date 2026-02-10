@@ -1351,9 +1351,122 @@ function AutoFocusInput() {
 }
 ```
 ## 使用 Effect 进行同步
-onMounted	useEffect(() => {}, [])	组件挂载后执行一次（初始化数据、调用 API）
-onUpdated	useEffect(() => {})	组件每次更新后执行（监听状态变化、DOM 更新后操作）
-onUnmounted	useEffect(() => { return () => { /* 清理 */ } }, [])	组件卸载前执行（取消请求、清除定时器）
+操作类型	React 写法	Vue 写法
+初始化操作	useEffect(() => {}, [])	onMounted
+依赖更新操作	useEffect(() => {}, [依赖])	watch(依赖, 回调)
+清理资源	在 useEffect 内返回清理函数	onUnmounted
+- 🧩 React useEffect 核心概念
+useEffect 是 React 提供的副作用钩子，用于处理组件生命周期中的副作用操作，比如：
+数据获取（API 请求）
+订阅事件（如定时器、WebSocket）
+手动操作 DOM
+清理资源（取消订阅、清除定时器）
+它的核心作用是：让函数组件也能像类组件一样，精准控制代码在组件挂载、更新、卸载时的执行时机。
+- 基本语法
+```ts
+useEffect(effect,dependcies)
+```
+effect：要执行的副作用函数，可以返回一个清理函数。
+dependencies：依赖数组，用于控制 effect 的执行时机。
+空数组 []：仅在组件挂载时执行一次，卸载时执行清理函数。
+包含状态 / 属性 [a, b]：当 a 或 b 变化时，执行 effect。
+不提供依赖数组：每次组件渲染后都会执行 effect。
+- 1. 组件挂载时执行（类似 componentDidMount）
+场景：页面加载时请求初始数据。
+```ts
+import { useState, useEffect } from 'react';
+
+function UserProfile() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // 空依赖数组，仅在挂载时执行一次
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true);
+      const res = await fetch('https://api.example.com/user/1');
+      const data = await res.json();
+      setUser(data);
+      setLoading(false);
+    };
+
+    fetchUser();
+  }, []); // 空数组 → 仅挂载时执行
+
+  if (loading) return <div>加载中...</div>;
+  return <div>用户名：{user.name}</div>;
+}
+```
+空依赖数组 [] 表示这个副作用只在组件首次渲染后执行一次，适合做初始化操作。
+异步请求放在 effect 中，避免在渲染阶段执行副作用。
+-  依赖状态更新时执行（类似 componentDidUpdate）
+```ts
+import { useState, useEffect } from 'react';
+
+function SearchBox() {
+  const [keyword, setKeyword] = useState('');
+  const [results, setResults] = useState([]);
+
+  // 依赖 keyword，当 keyword 变化时执行
+  useEffect(() => {
+    if (!keyword) {
+      setResults([]);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      // 模拟搜索请求
+      fetch(`https://api.example.com/search?q=${keyword}`)
+        .then(res => res.json())
+        .then(data => setResults(data));
+    }, 500); // 防抖：500ms 内不再输入才发起请求
+
+    // 清理函数：清除定时器，避免重复请求
+    return () => clearTimeout(timer);
+  }, [keyword]); // 依赖 keyword → 每次 keyword 变化时执行
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={keyword}
+        onChange={(e) => setKeyword(e.target.value)}
+        placeholder="输入关键词搜索"
+      />
+      <ul>
+        {results.map(item => <li key={item.id}>{item.title}</li>)}
+      </ul>
+    </div>
+  );
+}
+```
+依赖数组 [keyword] 表示只有当 keyword 变化时，才会重新执行这个 effect。
+返回的清理函数会在 effect 重新执行前或组件卸载时执行，用于清除上一次的定时器，避免重复请求。
+- 组件卸载时清理（类似 componentWillUnmount）
+```ts
+import { useState, useEffect } from 'react';
+
+function Notification() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    // 订阅事件
+    const handleNotification = () => setCount(prev => prev + 1);
+    window.addEventListener('notification', handleNotification);
+
+    // 清理函数：卸载时取消订阅
+    return () => {
+      window.removeEventListener('notification', handleNotification);
+    };
+  }, []); // 空数组 → 仅挂载时订阅，卸载时取消
+
+  return <div>收到通知：{count} 次</div>;
+}
+```
+effect 返回的函数会在组件卸载时执行，用于清理资源（如取消订阅、清除定时器）。
+如果不清理，会导致内存泄漏或意外行为。
+## 使用自定义 Hook 复用逻辑
+
 # 路由
 ## 路由的配置
 ```ts

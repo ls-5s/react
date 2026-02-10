@@ -1603,3 +1603,77 @@ function Panel({ isActive, onShow, title, children }) {
   );
 }
 ```
+# 父子
+```ts
+// 导入React核心库和useState状态钩子：useState用于管理组件的响应式状态
+import React, { useState } from 'react';
+
+/**
+ * 子组件：InputChild
+ * 功能：展示输入框，监听输入变化，实时将输入值传递给父组件
+ * @param {Object} props - 父组件传递过来的属性，包含回调函数onInputChange
+ * @returns {JSX.Element} 子组件渲染的输入框结构
+ */
+const InputChild = (props) => {
+  /**
+   * 输入框变化事件处理函数
+   * @param {React.ChangeEvent<HTMLInputElement>} e - 输入框的事件对象
+   */
+  const handleInputChange = (e) => {
+    // 从事件对象中获取输入框的实时值
+    const inputValue = e.target.value;
+    // 核心：调用父组件通过props传递的回调函数，将输入值作为参数传给父组件
+    // 这是React子传父的关键：子组件调用父组件传入的回调函数并传参
+    props.onInputChange(inputValue);
+  };
+
+  // 子组件渲染结构：包含标签和输入框
+  return (
+    <div>
+      <label>子组件输入框：</label>
+      {/* 输入框绑定onChange事件，每次输入变化都会触发handleInputChange */}
+      <input 
+        type="text" 
+        onChange={handleInputChange}  // 输入变化时执行的函数
+        placeholder="输入内容传给父组件"  // 输入框提示文字
+      />
+    </div>
+  );
+};
+
+/**
+ * 父组件：ParentInput
+ * 功能：渲染子组件，接收子组件传递的输入值，并展示该值
+ * @returns {JSX.Element} 父组件渲染结构
+ */
+const ParentInput = () => {
+  // 定义状态：存储从子组件接收的输入值，初始值为空字符串
+  // useState返回数组：[状态值, 状态更新函数]
+  const [inputValue, setInputValue] = useState("");
+
+  /**
+   * 接收子组件数据的回调函数（会传给子组件）
+   * @param {string} value - 子组件传递过来的输入框值
+   */
+  const handleInputFromChild = (value) => {
+    // 更新父组件的状态，将子组件传递的值存入inputValue
+    // 状态更新后，父组件会重新渲染，展示最新的值
+    setInputValue(value);
+  };
+
+  // 父组件渲染结构：展示接收的值 + 引入子组件
+  return (
+    <div style={{ padding: "20px" }}>
+      <h3>父组件区域</h3>
+      {/* 展示从子组件接收的实时输入值 */}
+      <p>父组件收到的输入值：{inputValue}</p>
+      {/* 关键：将回调函数通过props（onInputChange）传递给子组件 */}
+      {/* 子组件调用这个函数，就能把数据传给父组件 */}
+      <InputChild onInputChange={handleInputFromChild} />
+    </div>
+  );
+};
+
+// 导出父组件，供其他文件引入使用
+export default ParentInput;
+```
