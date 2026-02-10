@@ -1677,3 +1677,126 @@ const ParentInput = () => {
 // 导出父组件，供其他文件引入使用
 export default ParentInput;
 ```
+# hook
+## useref
+```ts
+import { useRef, useEffect } from 'react';
+
+function InputFocus() {
+  // 1. 创建 ref 对象，初始值为 null
+  const inputRef = useRef(null);
+
+  // 2. 组件挂载后，聚焦输入框
+  useEffect(() => {
+    // inputRef.current 指向真实的 DOM 元素
+    inputRef.current.focus(); 
+  }, []);
+
+  return (
+    // 3. 通过 ref 属性将 DOM 元素关联到 ref 对象
+    <input ref={inputRef} type="text" placeholder="自动聚焦的输入框" />
+  );
+}
+
+export default InputFocus;
+```
+## useContext
+1. 创建 Context（用 createContext）
+首先用 React 提供的 createContext 方法创建一个 Context 对象，可设置默认值（仅当组件没有匹配的 Provider 时生效）：
+```ts
+import { createContext, useContext } from 'react';
+
+// 创建Context，默认值为null（可选）
+const UserContext = createContext(null);
+```
+2. 用 Provider 包裹组件树，提供共享数据
+```ts
+function App() {
+  const user = { name: "小明", age: 20 };
+  
+  // Provider包裹子组件，所有子组件都能访问value中的user
+  return (
+    <UserContext.Provider value={user}>
+      <Parent /> {/* Parent无需接收props */}
+    </UserContext.Provider>
+  );
+}
+
+// Parent组件：无需接收user props，直接渲染Child
+function Parent() {
+  return <Child />;
+}
+```
+3. 在子组件中用 useContext 获取数据
+在需要使用共享数据的组件中，调用 useContext 并传入创建的 Context 对象，即可直接获取共享数据：
+```ts
+function Child() {
+  // 用useContext获取UserContext中的数据
+  const user = useContext(UserContext);
+  
+  return (
+    <div>
+      <p>用户名：{user.name}</p>
+      <p>年龄：{user.age}</p>
+    </div>
+  );
+}
+
+// 完整导出App组件
+export default App;
+```
+
+进阶示例：动态更新 Context 数据
+```ts
+import { createContext, useContext, useState } from 'react';
+
+// 1. 创建主题Context
+const ThemeContext = createContext({
+  theme: "light",
+  toggleTheme: () => {} // 预设方法，方便类型提示
+});
+
+// 2. 封装一个Provider组件（更易复用）
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState("light");
+  
+  // 切换主题的方法
+  const toggleTheme = () => {
+    setTheme(prev => prev === "light" ? "dark" : "light");
+  };
+  
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+// 3. 子组件消费Context
+function ThemedButton() {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  
+  return (
+    <button 
+      onClick={toggleTheme}
+      style={{ 
+        background: theme === "light" ? "#fff" : "#333",
+        color: theme === "light" ? "#333" : "#fff"
+      }}
+    >
+      当前主题：{theme}，点击切换
+    </button>
+  );
+}
+
+// 4. 根组件使用
+function App() {
+  return (
+    <ThemeProvider>
+      <ThemedButton />
+    </ThemeProvider>
+  );
+}
+
+export default App;
+```
