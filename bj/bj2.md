@@ -1467,6 +1467,139 @@ effect 返回的函数会在组件卸载时执行，用于清理资源（如取�
 如果不清理，会导致内存泄漏或意外行为。
 ## 使用自定义 Hook 复用逻辑
 
+- 核心规则
+1. 命名必须以 use 开头：比如 useFetch、useOnlineStatus（React 靠这个识别 Hook，确保 Hook 规则生效）；
+2. 内部可调用其他 Hook：自定义 Hook 本质是 “Hook 的组合”，可以自由使用 useState、useEffect 等内置 Hook；
+3. 复用逻辑而非 UI：每个使用自定义 Hook 的组件，都会拥有独立的状态（Hook 是逻辑复用，不是状态共享）；
+4. 可返回任意值：可以返回状态、函数、对象等，组件按需接收即可。
+- 通用数据请求 Hook → useFetch
+这是最常用的自定义 Hook，封装 “请求数据 + loading 状态 + 错误处理 + 取消请求” 的通用逻辑，可在任意组件中复用。
+```ts
+// hooks/useFetch.js（建议抽离到单独文件，方便全局复用）
+import { useState, useEffect, useCallback } from 'react';
+
+/**
+ * 通用数据请求 Hook
+ * @param {string} url - 请求地址
+ * @param {object} options - 请求配置（可选，如 method、headers 等）
+ * @returns {object} - 返回 { data, loading, error, refetch }
+ */
+export function useFetch(url, options = {}) {
+  // 定义请求相关的状态（每个使用该Hook的组件，状态都是独立的）
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // 封装请求逻辑（useCallback 缓存函数，避免重复创建）
+  const fetchData = useCallback(async () => {
+    if (!url) return; // 无url时不请求
+
+    setLoading(true);
+    setError(null);
+
+    // 创建 AbortController 用于取消请求
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    try {
+      // 合并请求配置，加入取消信号
+      const res = await fetch(url, { ...options, signal });
+      if (!res.ok) throw new Error(`请求失败：${res.status}`);
+      const result = await res.json();
+      
+      // 避免更新已取消/卸载的组件状态
+      if (!signal.aborted) {
+        setData(result);
+      }
+    } catch (err) {
+      // 忽略“请求取消”的错误（正常业务逻辑）
+      if (err.name !== 'AbortError' && !signal.aborted) {
+        setError(err.message);
+      }
+    } finally {
+      // 仅在请求未取消时结束loading
+      if (!signal.aborted) {
+        setLoading(false);
+      }
+    }
+
+    // 返回取消函数，供清理逻辑使用
+    return () => controller.abort();
+  }, [url, options]); // 依赖url/options，变化时重新创建函数
+
+  // 首次挂载/url/options变化时，执行请求
+  useEffect(() => {
+    const abortRequest = fetchData();
+    // 组件卸载/依赖变化时，取消请求
+    return () => abortRequest?.();
+  }, [fetchData]);
+
+  // 暴露refetch方法，供组件手动触发重新请求
+  const refetch = useCallback(() => fetchData(), [fetchData]);
+
+  // 返回组件需要的状态和方法
+  return { data, loading, error, refetch };
+}
+```
+在组件中复用 useFetch 
+```ts
+// components/UserList.js
+import { useFetch } from '../hooks/useFetch';
+
+// 组件1：获取用户列表
+function UserList() {
+  // 复用useFetch逻辑，仅需传入url
+  const { data: users, loading, error, refetch } = useFetch(
+    'https://jsonplaceholder.typicode.com/users'
+  );
+
+  if (loading) return <div>加载用户列表中...</div>;
+  if (error) return <div>错误：{error}</div>;
+
+  return (
+    <div>
+      <h3>用户列表</h3>
+      <button onClick={refetch}>刷新列表</button>
+      <ul>
+        {users?.map(user => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// 组件2：获取单条用户数据（复用同一个useFetch）
+function UserDetail() {
+  // 复用useFetch逻辑，传入不同的url
+  const { data: user, loading, error } = useFetch(
+    'https://jsonplaceholder.typicode.com/users/1'
+  );
+
+  if (loading) return <div>加载用户详情中...</div>;
+  if (error) return <div>错误：{error}</div>;
+
+  return (
+    <div>
+      <h3>用户详情</h3>
+      <p>姓名：{user?.name}</p>
+      <p>邮箱：{user?.email}</p>
+    </div>
+  );
+}
+
+// 父组件：同时使用两个复用了useFetch的组件
+function App() {
+  return (
+    <div>
+      <UserList />
+      <hr />
+      <UserDetail />
+    </div>
+  );
+}
+```
+
 # 路由
 ## 路由的配置
 ```ts
