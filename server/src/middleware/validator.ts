@@ -55,3 +55,64 @@ export const validateId = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
+export const validateRegister = (req: Request, res: Response, next: NextFunction) => {
+  const { username, email, password } = req.body;
+
+  if (!username || typeof username !== 'string' || username.trim().length === 0) {
+    const error: AppError = new Error('用户名不能为空');
+    error.statusCode = 400;
+    return next(error);
+  }
+
+  if (username.length < 3 || username.length > 20) {
+    const error: AppError = new Error('用户名长度必须在3-20个字符之间');
+    error.statusCode = 400;
+    return next(error);
+  }
+
+  if (!email || typeof email !== 'string' || email.trim().length === 0) {
+    const error: AppError = new Error('邮箱不能为空');
+    error.statusCode = 400;
+    return next(error);
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    const error: AppError = new Error('邮箱格式不正确');
+    error.statusCode = 400;
+    return next(error);
+  }
+
+  if (!password || typeof password !== 'string' || password.length === 0) {
+    const error: AppError = new Error('密码不能为空');
+    error.statusCode = 400;
+    return next(error);
+  }
+
+  if (password.length < 6 || password.length > 50) {
+    const error: AppError = new Error('密码长度必须在6-50个字符之间');
+    error.statusCode = 400;
+    return next(error);
+  }
+
+  next();
+};
+
+export const validateLogin = (req: Request, res: Response, next: NextFunction) => {
+  const { username, password } = req.body;
+
+  if (!username || typeof username !== 'string' || username.trim().length === 0) {
+    const error: AppError = new Error('用户名不能为空');
+    error.statusCode = 400;
+    return next(error);
+  }
+
+  if (!password || typeof password !== 'string' || password.length === 0) {
+    const error: AppError = new Error('密码不能为空');
+    error.statusCode = 400;
+    return next(error);
+  }
+
+  next();
+};
+

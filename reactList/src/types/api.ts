@@ -25,3 +25,11 @@ export interface Post {
   updated_at?: string;
 }
 
+// 用户类型 - 直接使用后端字段
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  created_at: string;
+}
+

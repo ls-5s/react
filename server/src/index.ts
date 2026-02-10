@@ -1,10 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import postRoutes from './routes/postRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { initDefaultUser } from './data/users.js';
 
 const app = express();
 const PORT = process.env.PORT || 3002;
+
+// 初始化默认用户密码
+initDefaultUser().catch(console.error);
 
 // 中间件
 app.use(cors({
@@ -23,6 +28,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // 路由
+app.use('/api/auth', authRoutes);
 app.use('/api/post', postRoutes);
 
 // 健康检查

@@ -6,6 +6,28 @@ const instance = axios.create({
   timeout: 10000,
 });
 
+// 请求拦截器 - 添加 token
+instance.interceptors.request.use(
+  (config) => {
+    try {
+      const stored = localStorage.getItem('auth-storage');
+      if (stored) {
+        const authData = JSON.parse(stored);
+        if (authData?.token) {
+          config.headers.Authorization = `Bearer ${authData.token}`;
+        }
+      }
+    } catch {
+      // 忽略解析错误
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// 响应拦截器
 instance.interceptors.response.use(
   (response) => {
     const { data } = response;
@@ -15,7 +37,11 @@ instance.interceptors.response.use(
     return Promise.reject(new Error(data.message || '请求失败'));
   },
   (error) => {
-    return Promise.reject(new Error(error.message || '网络错误'));
+    // 401 未授权，清除 token
+    if (error.response?.status === 401) {
+      localStorage.removeItem('auth-storage');
+    }
+    return Promise.reject(new Error(error.response?.data?.message || error.message || '网络错误'));
   }
 );
 

@@ -1,9 +1,15 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import { posts, Post } from '../data/posts.js';
 import { validatePost, validateId } from '../middleware/validator.js';
-import { AppError } from '../middleware/errorHandler.js';
 
 const router = Router();
+
+const NOT_FOUND_RESPONSE = {
+  code: 404,
+  message: '文章不存在',
+  success: false,
+  data: null,
+};
 
 // 获取文章列表
 router.get('/list', (req: Request, res: Response) => {
@@ -49,12 +55,7 @@ router.get('/:id', validateId, (req: Request, res: Response) => {
   const post = posts.find((p) => p.id === id);
   
   if (!post) {
-    return res.status(404).json({
-      code: 404,
-      message: '文章不存在',
-      success: false,
-      data: null,
-    });
+    return res.status(404).json(NOT_FOUND_RESPONSE);
   }
   
   res.json({
@@ -97,19 +98,13 @@ router.post('/', validatePost, (req: Request, res: Response) => {
 // 更新文章
 router.put('/:id', validateId, validatePost, (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const { title, content } = req.body;
-  
   const index = posts.findIndex((p) => p.id === id);
   
   if (index === -1) {
-    return res.status(404).json({
-      code: 404,
-      message: '文章不存在',
-      success: false,
-      data: null,
-    });
+    return res.status(404).json(NOT_FOUND_RESPONSE);
   }
   
+  const { title, content } = req.body;
   const updatedPost: Post = {
     ...posts[index],
     title: title.trim(),
@@ -133,12 +128,7 @@ router.delete('/:id', validateId, (req: Request, res: Response) => {
   const index = posts.findIndex((p) => p.id === id);
   
   if (index === -1) {
-    return res.status(404).json({
-      code: 404,
-      message: '文章不存在',
-      success: false,
-      data: null,
-    });
+    return res.status(404).json(NOT_FOUND_RESPONSE);
   }
   
   posts.splice(index, 1);

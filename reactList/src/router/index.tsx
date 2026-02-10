@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import App from '../App';
-import { Loading } from '../components';
+import { Loading, ProtectedRoute } from '../components';
 
 // 懒加载所有页面组件
 const Index = lazy(() => import('../pages/Index'));
@@ -10,6 +10,8 @@ const PostDetail = lazy(() => import('../pages/PostDetail'));
 const CreatePost = lazy(() => import('../pages/CreatePost'));
 const EditPost = lazy(() => import('../pages/EditPost'));
 const About = lazy(() => import('../pages/About'));
+const Login = lazy(() => import('../pages/Login'));
+const Register = lazy(() => import('../pages/Register'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 
 // Suspense 包装组件
@@ -47,10 +49,28 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: '/login',
+        element: (
+          <LazyWrapper>
+            <Login />
+          </LazyWrapper>
+        ),
+      },
+      {
+        path: '/register',
+        element: (
+          <LazyWrapper>
+            <Register />
+          </LazyWrapper>
+        ),
+      },
+      {
         path: '/create',
         element: (
           <LazyWrapper>
-            <CreatePost />
+            <ProtectedRoute>
+              <CreatePost />
+            </ProtectedRoute>
           </LazyWrapper>
         ),
       },
@@ -58,7 +78,9 @@ export const router = createBrowserRouter([
         path: '/post/:id/edit',
         element: (
           <LazyWrapper>
-            <EditPost />
+            <ProtectedRoute>
+              <EditPost />
+            </ProtectedRoute>
           </LazyWrapper>
         ),
       },
