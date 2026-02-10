@@ -1599,6 +1599,24 @@ function App() {
   );
 }
 ```
+- useCallback
+```ts
+// useFetch 核心代码（加 useCallback 的情况）
+export const useFetch = (url) => {
+  // 1. 用 useCallback 缓存 fetchData → 引用稳定
+  const fetchData = useCallback(async () => {
+    console.log('发起请求：', url);
+    // 实际请求逻辑...
+  }, [url]); // 只有 url 变了，fetchData 才会生成新引用
+
+  // 2. useEffect 依赖 fetchData
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]); // 只有 fetchData 引用变了，才重新执行
+
+  // ...其他逻辑
+};
+```
 
 # 路由
 ## 路由的配置
@@ -2092,3 +2110,298 @@ export default function AuthComponent() {
   );
 } 
 ```
+# 常见的hook
+在 React 开发中，除了我们反复提到的 `useState`、`useEffect`、`useCallback` 外，还有一批**高频实用的 Hook**，覆盖「基础操作、性能优化、状态管理、跨组件通信、DOM 操作」等 90% 的开发场景。下面按「使用频率+核心场景」分类讲解，每个 Hook 都包含「核心作用+使用场景+极简示例+关键注意点」，新手也能快速理解。
+
+
+- 1. useRef
+**核心作用**：
+保存「跨渲染周期的变量」（比如 DOM 元素、定时器、首次渲染标记），且修改 `ref.current` 不会触发组件重渲染（这是和 `useState` 的核心区别）。
+
+**使用场景**：
+- 获取 DOM 元素（比如输入框聚焦、修改 DOM 样式）；
+- 保存定时器/计时器（避免每次渲染重新创建）；
+- 标记“首次渲染”（配合 `useEffect` 区分初始化和更新）。
+
+**极简示例**：
+```jsx
+import { useState, useRef, useEffect } from 'react';
+
+function InputDemo() {
+  // 1. 保存 DOM 元素
+  const inputRef = useRef(null);
+  // 2. 保存定时器
+  const timerRef = useRef(null);
+  // 3. 标记首次渲染
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    // 首次渲染：聚焦输入框
+    if (isFirstRender.current) {
+      inputRef.current.focus(); // 操作 DOM
+      isFirstRender.current = false;
+    }
+
+    // 启动定时器，保存到 ref
+    timerRef.current = setInterval(() => {
+      console.log('定时器运行中');
+    }, 1000);
+
+    // 卸载时清除定时器
+    return () => clearInterval(timerRef.current);
+  }, []);
+
+  return <input ref={inputRef} placeholder="自动聚焦" />;
+}
+```
+
+**关键注意点**：
+- `ref.current` 的值变化不会触发重渲染，所以不要用它存储需要驱动视图更新的状态（比如列表数据）；
+- 服务端渲染时，`useRef` 也能正常使用（不会报错）。
+
+- 2. useContext
+**核心作用**：
+跨组件共享状态（比如全局主题、用户登录信息），避免「Props 钻取」（多层组件手动传参）。
+
+**使用场景**：
+- 全局状态（如用户信息、主题切换、语言设置）；
+- 中大型组件树的状态共享（替代逐层传 props）。
+
+**极简示例**：
+```jsx
+import { createContext, useContext } from 'react';
+
+// 1. 创建 Context（定义全局状态容器）
+const UserContext = createContext(null);
+
+// 父组件：提供 Context 数据
+function App() {
+  const user = { name: '张三', isLogin: true };
+  return (
+    <UserContext.Provider value={user}>
+      <Child />
+    </UserContext.Provider>
+  );
+}
+
+// 子组件：消费 Context 数据（无需 props 传参）
+function Child() {
+  // 2. 使用 useContext 获取全局状态
+  const user = useContext(UserContext);
+  return <div>当前用户：{user?.name}</div>;
+}
+```
+
+**关键注意点**：
+- 当 `Provider` 的 `value` 变化时，所有消费该 Context 的组件都会重渲染；
+- 可以配合 `useMemo` 缓存 `value`，避免不必要的重渲染。
+
+
+- 1. useMemo
+**核心作用**：
+缓存「复杂计算的结果」，避免组件每次渲染时重复计算（比如大数据过滤、数学运算）。
+（和 `useCallback` 对比：`useMemo` 缓存**值**，`useCallback` 缓存**函数**）。
+
+**使用场景**：
+- 复杂数据处理（如长列表过滤、排序）；
+- 耗时计算（如金额换算、数据格式化）；
+- 避免传递给子组件的复杂对象/数组重复创建（配合 `React.memo`）。
+
+**极简示例**：
+```jsx
+import { useState, useMemo } from 'react';
+
+function BigList() {
+  const [list, setList] = useState([1,2,3,...,10000]); // 模拟大数据
+  const [keyword, setKeyword] = useState('');
+
+  // 用 useMemo 缓存过滤结果：仅 keyword 变化时重新计算
+  const filteredList = useMemo(() => {
+    console.log('执行过滤计算'); // 仅 keyword 变时打印
+    return list.filter(item => item.toString().includes(keyword));
+  }, [list, keyword]); // 依赖：list 或 keyword 变化才重新计算
+
+  return (
+    <div>
+      <input onChange={(e) => setKeyword(e.target.value)} />
+      <div>{filteredList.length} 条结果</div>
+    </div>
+  );
+}
+```
+
+**关键注意点**：
+- 不要滥用 `useMemo`：简单计算（如 `a + b`）没必要用，反而增加内存开销；
+- 依赖数组必须写全：计算中用到的所有变量都要加入，否则会拿到旧值。
+
+- 2. React.memo（高阶组件，配合 Hook 用）
+**核心作用**：
+缓存组件，仅当 `props` 引用/值变化时才重渲染（配合 `useCallback/useMemo` 效果最佳）。
+
+**使用场景**：
+- 子组件频繁重渲染（比如列表项、按钮组件）；
+- 子组件接收的 props 是函数/对象（需配合 `useCallback/useMemo` 缓存）。
+
+**极简示例**：
+```jsx
+import { useState, useCallback } from 'react';
+
+// 用 React.memo 包裹子组件：仅 props 变化时重渲染
+const Button = React.memo(({ onClick }) => {
+  console.log('按钮重渲染');
+  return <button onClick={onClick}>点击</button>;
+});
+
+function Parent() {
+  const [count, setCount] = useState(0);
+
+  // 用 useCallback 缓存函数：避免每次渲染创建新引用
+  const handleClick = useCallback(() => {
+    console.log('点击按钮');
+  }, []);
+
+  return (
+    <div>
+      <Button onClick={handleClick} />
+      <button onClick={() => setCount(count+1)}>无关按钮({count})</button>
+    </div>
+  );
+}
+```
+
+
+- 1. useReducer
+**核心作用**：
+替代 `useState` 处理「复杂状态逻辑」（比如多状态联动、状态切换规则复杂），遵循 Redux 风格的「action + reducer」模式。
+
+**使用场景**：
+- 表单多字段管理（如登录表单：用户名、密码、验证码）；
+- 状态切换逻辑复杂（如购物车：加购、减购、清空）；
+- 组件状态多且联动（如弹窗：显示/隐藏/加载/错误）。
+
+**极简示例**：
+```jsx
+import { useReducer } from 'react';
+
+// 1. 定义 reducer 函数：根据 action 处理状态
+function cartReducer(state, action) {
+  switch (action.type) {
+    case 'ADD':
+      return { ...state, count: state.count + 1 };
+    case 'MINUS':
+      return { ...state, count: state.count - 1 };
+    default:
+      return state;
+  }
+}
+
+function Cart() {
+  // 2. 使用 useReducer：初始状态 + reducer 函数
+  const [state, dispatch] = useReducer(cartReducer, { count: 0 });
+
+  return (
+    <div>
+      <p>数量：{state.count}</p>
+      {/* 3. 分发 action 触发状态变化 */}
+      <button onClick={() => dispatch({ type: 'ADD' })}>+1</button>
+      <button onClick={() => dispatch({ type: 'MINUS' })}>-1</button>
+    </div>
+  );
+}
+```
+
+- 2. useLayoutEffect
+**核心作用**：
+和 `useEffect` 功能几乎一致，但执行时机不同：
+- `useEffect`：DOM 更新后 **异步** 执行（不阻塞浏览器绘制）；
+- `useLayoutEffect`：DOM 更新后 **同步** 执行（在浏览器绘制前）。
+
+**使用场景**：
+- 获取 DOM 布局信息（如元素宽高、位置），避免视觉闪烁；
+- 同步修改 DOM 样式（如调整元素位置）。
+
+**关键注意点**：
+- 尽量用 `useEffect`：`useLayoutEffect` 会阻塞渲染，可能导致页面卡顿；
+- 服务端渲染时，`useLayoutEffect` 会报警告（改用 `useEffect` 或忽略）。
+
+- 3. useId
+**核心作用**：
+生成「跨服务端/客户端的唯一 ID」，解决服务端渲染时 ID 不匹配的问题（替代手动写 `Math.random()`）。
+
+**使用场景**：
+- 表单 `label` 和 `input` 的 `id` 绑定；
+- 多个相同组件的唯一标识（如多个弹窗的 `aria-labelledby`）。
+
+**极简示例**：
+```jsx
+import { useId } from 'react';
+
+function FormInput() {
+  // 生成唯一 ID
+  const inputId = useId();
+  return (
+    <div>
+      <label htmlFor={inputId}>用户名：</label>
+      <input id={inputId} type="text" />
+    </div>
+  );
+}
+```
+-  4. useTransition / useDeferredValue（React 18+ 新增）
+**核心作用**：
+标记「非紧急更新」，避免耗时操作阻塞页面渲染（比如大数据列表筛选、搜索框实时联想）。
+
+**使用场景**：
+- 大数据量筛选/排序（如 10 万条数据的列表过滤）；
+- 搜索框实时联想（输入时不阻塞输入框响应）。
+
+**极简示例（useTransition）**：
+```jsx
+import { useState, useTransition } from 'react';
+
+function BigListFilter() {
+  const [keyword, setKeyword] = useState('');
+  const [list, setList] = useState([]);
+  const [isPending, startTransition] = useTransition(); // 标记非紧急更新
+
+  // 输入时立即更新输入框，筛选逻辑标记为非紧急
+  const handleChange = (e) => {
+    setKeyword(e.target.value); // 紧急更新：优先执行
+    // 非紧急更新：不阻塞输入框
+    startTransition(() => {
+      const filtered = [...Array(100000)].filter(item => /* 复杂筛选 */);
+      setList(filtered);
+    });
+  };
+
+  return (
+    <div>
+      <input value={keyword} onChange={handleChange} />
+      {isPending && <div>筛选中...</div>}
+      <div>{list.length} 条结果</div>
+    </div>
+  );
+}
+```
+
+- 四、常用 Hook 优先级/使用总结
+| 优先级 | Hook 名称       | 核心使用场景                          | 新手必学？ |
+|--------|-----------------|---------------------------------------|------------|
+| 最高   | useState        | 组件状态管理                          | ✅ 必学    |
+| 最高   | useEffect       | 副作用/生命周期处理                   | ✅ 必学    |
+| 最高   | useRef          | 获取 DOM/保存跨渲染变量               | ✅ 必学    |
+| 高     | useContext      | 跨组件状态共享                        | ✅ 必学    |
+| 高     | useCallback     | 缓存函数（避免 useEffect/子组件重执行） | ✅ 必学    |
+| 高     | useMemo         | 缓存计算结果（避免重复计算）| ✅ 必学    |
+| 中     | useReducer      | 复杂状态管理                          | ⚠️ 进阶    |
+| 中     | useId           | 生成唯一 ID（兼容 SSR）| ⚠️ 进阶    |
+| 低     | useLayoutEffect | 同步处理 DOM 布局                     | ❌ 按需学  |
+| 低     | useTransition   | 非紧急更新（大数据处理）| ❌ 按需学  |
+
+- 五、核心总结（关键点回顾）
+1. **基础必备**：`useState/useEffect/useRef/useContext` 是新手必掌握的核心，覆盖 80% 基础场景；
+2. **性能优化**：`useCallback/useMemo/React.memo` 配合使用，解决重复渲染/计算问题；
+3. **高级场景**：`useReducer` 处理复杂状态，`useId` 兼容 SSR，`useTransition` 优化大数据操作；
+4. **使用原则**：按需使用，不要滥用（比如简单计算不用 `useMemo`，普通副作用不用 `useLayoutEffect`）。
+
+这些 Hook 覆盖了 React 开发中 95% 以上的场景，掌握后再结合自定义 Hook 封装，就能高效解决几乎所有业务需求。
