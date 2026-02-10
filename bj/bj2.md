@@ -1709,3 +1709,140 @@ function UserDetail() {
 ```
 # api
 # zustand(store)
+安装依赖
+```ts
+npm install zustand
+```
+```ts
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+// 1. 定义类型接口（核心：TypeScript 类型约束）
+interface UserInfo {
+  id: string;
+  name: string;
+  email?: string;
+  avatar?: string;
+}
+
+interface AuthState {
+  isAuthenticated: boolean; // 是否登录
+  user: UserInfo | null;    // 用户信息
+  token: string | null;     // 登录令牌
+  // 同步方法
+  login: (userInfo: UserInfo, token: string) => void;
+  logout: () => void;
+  updateUserInfo: (partialInfo: Partial<UserInfo>) => void;
+  // 重置状态
+  resetAuth: () => void;
+}
+
+// 2. 创建持久化认证 Store
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      // 初始状态
+      isAuthenticated: false,
+      user: null,
+      token: null,
+
+      // 登录：同步修改状态
+      login: (userInfo, token) => {
+        set({
+          isAuthenticated: true,
+          user: userInfo,
+          token: token,
+        });
+      },
+
+      // 登出：重置状态
+      logout: () => {
+        set({
+          isAuthenticated: false,
+          user: null,
+          token: null,
+        });
+      },
+
+      // 更新用户信息：函数式更新（依赖当前状态）
+      updateUserInfo: (partialInfo) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, ...partialInfo } : null,
+        }));
+      },
+
+      // 重置认证状态（开发中常用：比如切换账号）
+      resetAuth: () => {
+        set({
+          isAuthenticated: false,
+          user: null,
+          token: null,
+        });
+      },
+    }),
+    {
+      name: 'auth-storage', // localStorage 的 key
+      // 可选：自定义存储位置（比如 sessionStorage）
+      // storage: sessionStorage,
+      // 可选：只持久化部分状态（比如不持久化 token）
+      // partialize: (state) => ({ isAuthenticated: state.isAuthenticated, user: state.user }),
+    }
+  )
+);
+```
+使用它
+```ts
+import { useAuthStore } from '../store/authStore';
+
+export default function AuthComponent() {
+  // 按需获取状态（优化重渲染：仅依赖的状态变化才重渲染）
+  const { isAuthenticated, user, login, logout, updateUserInfo, resetAuth } = useAuthStore(
+    (state) => ({
+      isAuthenticated: state.isAuthenticated,
+      user: state.user,
+      login: state.login,
+      logout: state.logout,
+      updateUserInfo: state.updateUserInfo,
+      resetAuth: state.resetAuth,
+    })
+  );
+
+  // 模拟登录（传入测试数据）
+  const handleLogin = () => {
+    login(
+      { id: 'user-1001', name: '前端开发者', email: 'dev@test.com', avatar: 'https://avatar.com/1001' },
+      'token-xxxx-123456'
+    );
+  };
+
+  // 更新用户头像（演示部分更新）
+  const handleUpdateAvatar = () => {
+    updateUserInfo({ avatar: 'https://avatar.com/new-1001' });
+  };
+
+  return (
+    <div style={{ margin: '20px 0', padding: '20px', border: '1px solid #eee' }}>
+      <h2>🔐 认证管理（持久化）</h2>
+      {isAuthenticated ? (
+        <div>
+          <p>当前用户：{user?.name}</p>
+          <p>邮箱：{user?.email}</p>
+          <p>头像：{user?.avatar || '无'}</p>
+          <button onClick={handleUpdateAvatar} style={{ marginRight: '10px' }}>
+            更新头像
+          </button>
+          <button onClick={logout} style={{ marginRight: '10px' }}>
+            登出
+          </button>
+          <button onClick={resetAuth}>重置认证状态</button>
+          <p style={{ color: '#999', fontSize: '12px' }}>
+            ✨ 刷新页面后状态不会丢失（persist 持久化）
+          </p>
+        </div>
+      ) : (
+        <button onClick={handleLogin}>模拟登录</button>
+      )}
+    </div>
+  );
+} 
+```
