@@ -1800,3 +1800,84 @@ function App() {
 
 export default App;
 ```
+## useMemo
+useMemo 核心用法：useMemo(计算函数, 依赖项数组)，缓存计算结果，仅依赖变化时重新计算；
+核心使用场景：① 耗时的复杂计算；② 缓存复杂类型 props（配合 React.memo）；③ 缓存多依赖的衍生状态；
+关键原则：只在计算有性能损耗时使用，依赖项必须准确，不滥用、不依赖它做逻辑判断。
+- demo
+```ts
+import { useMemo } from 'react';
+
+// 基本语法
+const memoizedValue = useMemo(
+  // 第一个参数：计算函数（返回需要缓存的值）
+  () => {
+    // 这里写你的计算逻辑（比如过滤、排序、复杂运算）
+    return 要缓存的结果;
+  },
+  // 第二个参数：依赖项数组（关键！决定什么时候重新计算）
+  [依赖项1, 依赖项2] 
+);
+```
+## useReducer
+使用 useReducer 本质是 “三要素” 协作：
+要素	作用
+state	当前的状态值（和 useState 的 state 一样，是你要管理的数据）
+reducer	纯函数，唯一能更新 state 的地方，接收 state 和 action，返回新 state
+dispatch	触发状态更新的函数，接收 action（动作指令），调用后会执行 reducer
+```ts
+import { useReducer } from 'react';
+
+// 1. 定义 reducer 函数（核心：集中处理所有状态更新逻辑）
+// 纯函数规则：✅ 不修改原state ✅ 无副作用 ✅ 相同输入返回相同输出
+function countReducer(state, action) {
+  // action 必须包含 type（动作类型），payload 可选（传递动态数据）
+  switch (action.type) {
+    case 'INCREMENT': // 加1
+      return { ...state, count: state.count + 1 }; // 必须返回新对象，不能改原state
+    case 'DECREMENT': // 减1
+      return { ...state, count: state.count - 1 };
+    case 'RESET': // 重置（用 payload 传重置值）
+      return { ...state, count: action.payload };
+    default:
+      // 未知 action 抛错，避免漏写逻辑
+      throw new Error(`未定义的 action type：${action.type}`);
+  }
+}
+
+function Counter() {
+  // 2. 初始化 useReducer：参数1=reducer，参数2=初始state
+  const [state, dispatch] = useReducer(countReducer, { count: 0 });
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <p>当前计数：{state.count}</p>
+      {/* 3. 触发 dispatch：传递 action（type 是必须的） */}
+      <button onClick={() => dispatch({ type: 'INCREMENT' })}>+1</button>
+      <button onClick={() => dispatch({ type: 'DECREMENT' })}>-1</button>
+      <button onClick={() => dispatch({ type: 'RESET', payload: 0 })}>重置</button>
+    </div>
+  );
+}
+
+export default Counter;
+```
+
+## useId
+
+```ts
+import { useId } from 'react';
+
+function MyComponent() {
+  // 1. 基础用法：生成纯唯一 ID（无参数！格式如：r0、r1、r2...）
+  const basicId = useId();
+
+  // 2. 带前缀用法（正确方式：基础 ID + 前缀拼接）
+  const prefixedId = `username-${useId()}`;
+
+  return <div>生成的 ID：{basicId} | {prefixedId}</div>;
+}
+
+export default MyComponent;
+```
+生成的 ID：r0 | username-r1

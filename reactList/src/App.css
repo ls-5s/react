@@ -1,0 +1,52 @@
+.app {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* 全局动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 链接样式 */
+a {
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+/* 按钮基础样式 */
+button {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* 输入框基础样式 */
+input,
+textarea {
+  transition: all 0.2s ease;
+}
+
+/* 卡片悬停效果 */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+}
+
