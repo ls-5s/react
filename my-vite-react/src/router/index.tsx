@@ -3,6 +3,7 @@ import Layout from "../pages/Layout";
 import Home from "../pages/Home";
 import About from "../pages/About";
 import Demo from "../pages/Demo";
+import Test from "../pages/Test";
 import Products from "../pages/products/Products";
 import ProductDetail from "../pages/products/ProductDetail";
 import ProductCategory from "../pages/products/ProductCategory";
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
       {
         path: "demo",
         element: <Demo />,
+      },
+      {
+        path: "test",
+        element: <Test />,
       },
       // 产品中心 - 二级路由
       {

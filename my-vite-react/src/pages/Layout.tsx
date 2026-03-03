@@ -49,6 +49,18 @@ const Layout = () => {
                 demo
               </NavLink>
               <NavLink
+                to="/test"
+                className={({ isActive }) =>
+                  `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive
+                      ? "text-blue-600 bg-blue-50"
+                      : "text-gray-700 hover:text-blue-600"
+                  }`
+                }
+              >
+                test
+              </NavLink>
+              <NavLink
                 to="/products"
                 className={({ isActive }) =>
                   `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
