@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* 让页面容器铺满整个窗口，高度交给 Tailwind 的 min-h-screen */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* 只保留最基础的 body 样式，其他交给 Tailwind */
+body {
+  margin: 0;
+}

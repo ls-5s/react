@@ -1,48 +1,67 @@
 # 创建react的两种方式
+
 - 方式 1：官方脚手架 create-react-app（最经典）
 
 这是 React 官方提供的脚手架，无需手动配置构建工具，适合新手快速上手：
 创建项目
 打开终端，执行命令（my-react-app 是项目名，可自定义）：
+
 ```bash
 
 npx create-react-app my-react-app
 ```
+
 进入项目目录
 项目创建完成后，进入项目文件夹：
+
 ```bash
 cd my-react-app
 ```
+
 启动开发服务器
 启动本地调试服务，自动打开浏览器预览：
+
 ```bash
 npm start
 ```
-启动后，浏览器会自动访问 http://localhost:3000，即可看到 React 默认页面。
+
+启动后，浏览器会自动访问 <http://localhost:3000，即可看到> React 默认页面。
+
 - 方式 2：使用 Vite 创建（更高效，推荐）
 
 Vite 是现代前端构建工具，比 create-react-app 启动 / 热更新更快，适合追求效率的场景：
 创建项目
 执行命令（my-vite-react 是项目名，--template react 指定 React 模板）：
+
 ```bash
-npm create vite@latest my-vite-react -- --template react
+npm create vite@latest my-vite-react -- --template react-ts
 ```
+
 进入项目目录
+
 ```bash
 cd my-vite-react
 ```
+
 安装依赖
 Vite 创建项目后需手动安装依赖：
+
 ```bash
 npm install
 ```
+
 启动开发服务器
+
 ```bash
 npm run dev
 ```
-启动后，终端会显示访问地址（通常是 http://localhost:5173），打开浏览器即可预览。
+
+启动后，终端会显示访问地址（通常是 <http://localhost:5173），打开浏览器即可预览。>
+
 # 描述 UI
+
 ## 你的第一个组件
+
 ```js
 function App () {
     return (
@@ -55,10 +74,13 @@ export default function Sum() {
     )
 }
 ```
+
 **注意：**
+
 - React 组件是常规的 JavaScript 函数，但 组件的名称必须以大写字母开头，否则它们将无法运行！
 
 但是，如果你的标签和 return 关键字不在同一行，则必须把它包裹在一对括号中，如下所示：
+
 ```js
 return (
   <div>
@@ -66,8 +88,10 @@ return (
   </div>
 );
 ```
+
 - 没有括号包裹的话，任何在 return 下一行的代码都 将被忽略！
 - 组件可以渲染其他组件，但是 请不要嵌套他们的定义：
+
 ```js
 export default function Gallery() {
   // 🔴 永远不要在组件中定义组件
@@ -77,7 +101,9 @@ export default function Gallery() {
   // ...
 }
 ```
+
 - 上面这段代码 非常慢，并且会导致 bug 产生。因此，你应该在顶层定义每个组件：
+
 ```js
 export default function Gallery() {
   // ...
@@ -88,13 +114,16 @@ function Profile() {
   // ...
 }
 ```
+
 - 当子组件需要使用父组件的数据时，你需要 通过 props 的形式进行传递，而不是嵌套定义。
 
 ## 组件的导入与导出
+
 组件的神奇之处在于它们的可重用性：你可以创建一个由其他组件构成的组件。但当你嵌套了越来越多的组件时，则需要将它们拆分成不同的文件。这样可以使得查找文件更加容易，并且能在更多地方复用这些组件。
 
 1. 具名导出（推荐：多组件 / 精准复用场景）
 这是你之前代码里的写法，适合一个文件导出多个成员（比如同时导出 Gallery 和 Profile）：
+
 ```jsx
 // Gallery.js - 顶层定义 + 具名导出 Profile
 export default function Gallery() { // Gallery 用默认导出（核心组件）
@@ -116,8 +145,10 @@ import { Profile } from './Gallery.js';
 // 同时导入 Gallery（默认）+ Profile（具名）
 import Gallery, { Profile } from './Gallery.js';
 ```
+
 2. 默认导出（推荐：单组件独立文件场景）
 如果把 Profile 拆成独立文件（比如 Profile.js），用默认导出更简洁（一个文件只导出一个核心组件）：
+
 ```jsx
 // Profile.js - 独立文件 + 默认导出
 export default function Profile() { // 无需要花括号，直接默认导出
@@ -136,14 +167,16 @@ import UserProfile from './Profile.js';
 ```
 
 ## 使用 JSX 书写标签语言
+
 JSX 是 JavaScript 语法扩展，可以让你在 JavaScript 文件中书写类似 HTML 的标签。虽然还有其它方式可以编写组件，但大部分 React 开发者更喜欢 JSX 的简洁性，并且在大部分代码库中使用它。
 
 **JSX 规则**
 
-1. 只能返回一个根元素 
+1. 只能返回一个根元素
 如果想要在一个组件中包含多个元素，需要用一个父标签把它们包裹起来。
 
 例如，你可以使用一个 <div> 标签：
+
 ```jsx
 <div>
   <h1>海蒂·拉玛的待办事项</h1>
@@ -157,11 +190,12 @@ JSX 是 JavaScript 语法扩展，可以让你在 JavaScript 文件中书写类�
   </ul>
 </div>
 ```
+
 如果你不想在标签中增加一个额外的 <div>，可以用 <> 和 </> 元素来代替：
-2. 标签必须闭合 
+2. 标签必须闭合
 JSX 要求标签必须正确闭合。像 <img> 这样的自闭合标签必须书写成 <img />，而像 <li>oranges 这样只有开始标签的元素必须带有闭合标签，需要改为 <li>oranges</li>
 
-3. 属性使用驼峰式命名 & 特殊属性替换
+1. 属性使用驼峰式命名 & 特殊属性替换
 
 JSX 的属性名遵循小驼峰命名法，且 JavaScript 保留字 / HTML 带连字符的属性需要替换：
 HTML 的class → JSX 的className（class是 JS 保留字）
@@ -169,6 +203,7 @@ HTML 的for → JSX 的htmlFor（for是 JS 保留字）
 HTML 的onclick → JSX 的onClick（驼峰式）
 HTML 的stroke-width → JSX 的strokeWidth（连字符转驼峰）
 HTML 的font-size → JSX 的fontSize（连字符转驼峰）
+
 ```jsx
 // 正确：使用className、htmlFor、onClick、fontSize
 <div className="box" style={{ fontSize: '16px' }}>
@@ -182,21 +217,25 @@ HTML 的font-size → JSX 的fontSize（连字符转驼峰）
   <input id="username" type="text" onclick={() => {}} />
 </div>
 ```
+
 **注意**
 
 - JSX and React 是相互独立的 东西。但它们经常一起使用，但你 可以 单独使用它们中的任意一个，JSX 是一种语法扩展，而 React 则是一个 JavaScript 的库。
 - 为什么多个 JSX 标签需要被一个父元素包裹？
 JSX 虽然看起来很像 HTML，但在底层其实被转化为了 JavaScript 对象，你不能在一个函数中返回多个对象，除非用一个数组把他们包装起来。这就是为什么多个 JSX 标签必须要用一个父元素或者 Fragment 来包裹。
 - 为什么要使用驼峰式？两个关键限制
+
 1. 限制 1：JavaScript 中，对象键名不能包含连字符（-）
 在 JavaScript 里，连字符-是减法运算符，如果对象键名写stroke-width，会被解析成stroke - width（即变量stroke减去变量width），导致语法错误。
 2. 限制 2：JavaScript 的保留字不能作为标识符
 JavaScript 有一系列保留字（如class、for、if、else等），这些单词被语言本身占用，不能直接作为变量名或对象键名。
 
 ## 在 JSX 中通过大括号使用 JavaScript
+
 JSX 允许你在 JavaScript 中编写类似 HTML 的标签，从而使渲染的逻辑和内容可以写在一起。有时候，你可能想要在标签中添加一些 JavaScript 逻辑或者引用动态的属性。这种情况下，你可以在 JSX 的大括号内来编写 JavaScript。
 
 **使用引号传递字符串**
+
 ```jsx
 export default function Avatar() {
   const avatar = 'https://i.imgur.com/7vQD0fPs.jpg';
@@ -218,20 +257,24 @@ export default function Avatar() {
 - 用作 JSX 标签内的文本：<h1>{name}'s To Do List</h1> 是有效的，但是 <{tag}>Gregorio Y. Zara's To Do List</{tag}> 无效。
 - 用作紧跟在 = 符号后的 属性：src={avatar} 会读取 avatar 变量，但是 src="{avatar}" 只会传一个字符串 {avatar}。
   
-**使用 “双大括号”：JSX 中的 CSS 和 对象** 
+**使用 “双大括号”：JSX 中的 CSS 和 对象**
 
 除了字符串、数字和其它 JavaScript 表达式，你甚至可以在 JSX 中传递对象。对象也用大括号表示，例如 { name: "Hedy Lamarr", inventions: 5 }。因此，为了能在 JSX 中传递，你必须用另一对额外的大括号包裹对象：person={{ name: "Hedy Lamarr", inventions: 5 }}。
 
 **注意**
 内联 style 属性 使用驼峰命名法编写。例如，
-```HTML 
+
+```HTML
 <ul style="background-color: black"> 在你的组件里应该写成 <ul style={{ backgroundColor: 'black' }}>。
 ```
+
 ## 将 Props 传递给组件
+
 React 组件使用 props 来互相通信。每个父组件都可以提供 props 给它的子组件，从而将一些信息传递给它。Props 可能会让你想起 HTML 属性，但你可以通过它们传递任何 JavaScript 值，包括对象、数组和函数。
 
 - 步骤 1：创建子组件文件 Avatar.jsx
 在该文件中定义并导出子组件Avatar（命名导出 / 默认导出均可，这里用默认导出）：
+
 ```jsx
 // src/components/Avatar.jsx
 // 子组件 Avatar：定义并默认导出
@@ -253,8 +296,10 @@ export default function Avatar({ person, size }) {
   );
 }
 ```
+
 - 步骤 2：在父组件文件 Profile.jsx 中导入子组件
 在父组件文件中通过import语句引入Avatar组件，然后使用：
+
 ```jsx
 // src/components/Profile.jsx
 // 导入子组件 Avatar（路径根据文件实际位置调整）
@@ -275,6 +320,7 @@ export default function Profile() {
 
 - 先理解 React 组件的 props 本质
 React 函数组件的参数本质上是一个props 对象，这个对象包含了父组件传递过来的所有属性。比如：当父组件这样使用你的 Avatar 组件时：
+
 ```jsx
 <Avatar person={{ name: '张三', img: 'xxx.jpg' }} size={40} />
 你的 Avatar 组件接收到的参数其实是一个完整的对象，长这样：
@@ -285,8 +331,10 @@ javascript
   size: 40
 }
 ```
+
 - 使用 JSX 展开语法传递 props
 有时候，传递 props 会变得非常重复：
+
 ```jsx
 function Profile({ person, size, isSepia, thickBorder }) {
   return (
@@ -301,7 +349,9 @@ function Profile({ person, size, isSepia, thickBorder }) {
   );
 }
 ```
+
 改成
+
 ```jsx
 function Profile(props) {
   return (
@@ -311,9 +361,12 @@ function Profile(props) {
   );
 }
 ```
+
 **特殊传值**
+
 - 一、场景 1：组件标签包裹的内容（children不能直接换名）
 children是 React 的内置特殊 props，专门用来接收组件标签对之间包裹的内容。比如你原来的写法：
+
 ```jsx
 ===================
 // 子组件：把 children 重命名为 btnText
@@ -342,10 +395,12 @@ export default function Toolbar() {
 ```
 
 ## 条件渲染
+
 通常你的组件会需要根据不同的情况显示不同的内容。在 React 中，你可以通过使用 JavaScript 的 if 语句、&& 和 ? : 运算符来选择性地渲染 JSX。
 
 **if/else 语句的使用**
 如果 isPacked 属性是 true，这段代码会返回一个不一样的 JSX。通过这样的改动，一些物品的名字后面会出现一个勾选符号：
+
 ```jsx
 function Item({ name, isPacked }) {
   if (isPacked) {
@@ -377,20 +432,24 @@ export default function PackingList() {
 }
 
 ```
+
 Sally Ride 的行李清单
 宇航服 ✅
 带金箔的头盔 ✅
 Tam 的照片
 
 **子和父组件在同一个页面是否有先后顺序**
+
 - 语法层面：顺序不强制（函数声明的 “提升” 特性）
 
 在你的代码中，Item和PackingList都是函数式组件（采用函数声明的方式：function 组件名() {}）。而 JavaScript 有一个函数声明提升（Hoisting） 的特性：
+
 - 特殊情况：顺序会强制要求（函数表达式 / 箭头函数）
 
 如果你的组件采用函数表达式（或箭头函数）的方式定义（比如const Item = () => {}），那么必须先定义子组件，再定义父组件，因为函数表达式没有 “提升” 特性，未定义就使用会直接报错。
 
 **选择性地包含 JSX**
+
 - 解决重复代码问题
 - 解决思路
 
@@ -400,6 +459,7 @@ Tam 的照片
 
 先定义变量存储动态内容（适合新手理解）
 我们可以先创建一个变量来存储 “物品名称 + 可选的✅”，然后将这个变量嵌入到公共的<li>标签中，这样就只需要写一次<li className="item">。
+
 ```jsx
 import React from 'react';
 
@@ -427,15 +487,19 @@ export default function PackingList() {
   );
 }
 ```
+
 **三目运算符（? :）**
 除了这样：
+
 ```jsx
 if (isPacked) {
   return <li className="item">{name} ✅</li>;
 }
 return <li className="item">{name}</li>;
 ```
+
 你还可以这样实现：
+
 ```jsx
 return (
   <li className="item">
@@ -443,7 +507,9 @@ return (
   </li>
 );
 ```
+
 **与运算符（&&）**
+
 ```jsx
 function Item({ name, isPacked }) {
   return (
@@ -454,12 +520,14 @@ function Item({ name, isPacked }) {
 }
 
 ```
+
 在 JavaScript 中，A && B的执行逻辑是：
 如果A为真（true），则表达式返回B；
 如果A为假（false），则表达式返回false（React 会自动忽略false、null、undefined这些值，不会渲染到页面上）。
 
 **注意**
 切勿将数字放在 && 左侧.
+
 - JavaScript 会自动将左侧的值转换成布尔类型以判断条件成立与否。然而，如果左侧是 0，整个表达式将变成左侧的值（0），React 此时则会渲染 0 而不是不进行渲染。
 
 - 例如，一个常见的错误是 messageCount && <p>New messages</p>。其原本是想当 messageCount 为 0 的时候不进行渲染，但实际上却渲染了 0。
@@ -467,8 +535,11 @@ function Item({ name, isPacked }) {
 - 为了更正，可以将左侧的值改成布尔类型：messageCount > 0 && <p>New messages</p>。
 
 ## 渲染列表
+
 你可能经常需要通过 JavaScript 的数组方法 来操作数组中的数据，从而将一个数据集渲染成多个相似的组件。在这篇文章中，你将学会如何在 React 中使用 filter() 筛选需要渲染的组件和使用 map() 把数组转换成组件数组。
+
 - 简化写法：filter() + map() 链式调用
+
 ```jsx
 import React from 'react';
 
@@ -499,25 +570,31 @@ function AdultUserList() {
 
 export default AdultUserList;
 ```
+
 **注意**
 因为箭头函数会隐式地返回位于 => 之后的表达式，所以你可以省略 return 语句。
+
 ```jsx
 const listItems = chemists.map(person =>
   <li>...</li> // 隐式地返回！
 );
 ```
+
 不过，如果你的 => 后面跟了一对花括号 { ，那你必须使用 return 来指定返回值！
+
 ```jsx
 const listItems = chemists.map(person => { // 花括号
   return <li>...</li>;
 });
 ```
+
 箭头函数 => { 后面的部分被称为 “块函数体”，块函数体支持多行代码的写法，但要用 return 语句才能指定返回值。假如你忘了写 return，那这个函数什么都不会返回！
 
 - 为每个列表项显示多个 DOM 节点
 如果你想让每个列表项都输出多个 DOM 节点而非一个的话，该怎么做呢？
 
 Fragment 语法的简写形式 <> </> 无法接受 key 值，所以你只能要么把生成的节点用一个 <div> 标签包裹起来，要么使用长一点但更明确的 <Fragment> 写法：
+
 ```jsx
 import { Fragment } from 'react';
 
@@ -530,12 +607,15 @@ const listItems = people.map(person =>
   </Fragment>
 );
 ```
+
 - 直接放在 map() 方法里的 JSX 元素一般都需要指定 key 值！
 
 ## 保持组件纯粹(看的有点云里雾里的)
 
 # 添加交互
+
 ## 响应事件
+
 使用 React 可以在 JSX 中添加 事件处理函数。其中事件处理函数为自定义函数，它将在响应交互（如点击、悬停、表单输入框获得焦点等）时触发。
 **添加事件处理函数**
 按照如下三个步骤，即可让它在用户点击时显示消息：
@@ -543,6 +623,7 @@ const listItems = people.map(person =>
 1. 在 Button 组件 内部 声明一个名为 handleClick 的函数。
 2. 实现函数内部的逻辑（使用 alert 来显示消息）。
 3. 添加 onClick={handleClick} 到 <button> JSX 中。
+
 ```jsx
 export default function app () {
 
@@ -556,6 +637,7 @@ export default function app () {
 ```
 
 **在事件处理函数中读取 props**
+
 ```jsx
 function AlertButton({ message, children }) {
   return (
@@ -578,8 +660,10 @@ export default function Toolbar() {
   );
 }
 ```
+
 **阻止传播**
 这个事件对象还允许你阻止传播。如果你想阻止一个事件到达父组件，你需要像下面 Button 组件那样调用 e.stopPropagation() ：
+
 ```jsx
 function Button({ onClick, children }) {
   return (
@@ -608,9 +692,11 @@ export default function Toolbar() {
 }
 
 ```
+
 **阻止默认行为**
 某些浏览器事件具有与事件相关联的默认行为。例如，点击 <form> 表单内部的按钮会触发表单提交事件，默认情况下将重新加载整个页面：
 你可以调用事件对象中的 e.preventDefault() 来阻止这种情况发生：
+
 ```jsx
 export default function Signup() {
   return (
@@ -624,9 +710,12 @@ export default function Signup() {
   );
 }
 ```
+
 ## State：组件的记忆
+
 组件通常需要根据交互更改屏幕上显示的内容。输入表单应该更新输入字段，单击轮播图上的“下一个”应该更改显示的图片，单击“购买”应该将商品放入购物车。组件需要“记住”某些东西：当前输入值、当前图片、购物车。在 React 中，这种组件特有的记忆被称为 state。
 **怎么去使用它**
+
 ```jsx
 import { useState } from 'react';
 import { sculptureList } from './data.js';
@@ -663,12 +752,14 @@ export default function Gallery() {
 }
 
 ```
+
 **注意**
 Hooks ——以 use 开头的函数——只能在组件或自定义 Hook 的最顶层调用。 你不能在条件语句、循环语句或其他嵌套函数内调用 Hook。Hook 是函数，但将它们视为关于组件需求的无条件声明会很有帮助。在组件顶部 “use” React 特性，类似于在文件顶部“导入”模块。
 **State 是隔离且私有的**
 State 是屏幕上组件实例内部的状态。换句话说，如果你渲染同一个组件两次，每个副本都会有完全隔离的 state！改变其中一个不会影响另一个。
 
 ## 渲染和提交
+
 组件显示到屏幕之前，其必须被 React 渲染。理解这些处理步骤将帮助你思考代码的执行过程并能解释其行为。
 想象一下，你的组件是厨房里的厨师，把食材烹制成美味的菜肴。在这种场景下，React 就是一名服务员，他会帮客户们下单并为他们送来所点的菜品。这种请求和提供 UI 的过程总共包括三个步骤：
 
@@ -698,7 +789,9 @@ State 是屏幕上组件实例内部的状态。换句话说，如果你渲染�
 - 对于重渲染，React 将应用最少的必要操作（在渲染时计算！），以使得 DOM 与最新的渲染输出相互匹配。
 
 ## state 如同一张快照
+
 也许 state 变量看起来和一般的可读写的 JavaScript 变量类似。但 state 在其表现出的特性上更像是一张快照。设置它不会更改你已有的 state 变量，但会触发重新渲染。
+
 ```jsx
 import { useState } from 'react';
 
@@ -718,9 +811,11 @@ export default function Counter() {
   )
 }
 ```
+
 简单来说：setTimeout 的回调函数捕获的是事件处理函数执行时的 number 快照，而不是状态更新后的最新值。
 一个 state 变量的值永远不会在一次渲染的内部发生变化， 即使其事件处理函数的代码是异步的。在 那次渲染的 onClick 内部，number 的值即使在调用 setNumber(number + 5) 之后也还是 0。它的值在 React 通过调用你的组件“获取 UI 的快照”时就被“固定”了。
 **函数式更新突破快照的限制（合理利用快照特性）**
+
 ```jsx
 import { useState } from 'react';
 
@@ -744,13 +839,16 @@ export default function SnapshotDemo3() {
   );
 }
 ```
+
 - 函数式更新的参数 prevCount 是 React 帮我们保存的上一次更新后的 state 快照，而不是当前渲染的快照。
 - 三次调用中，每次的 prevCount 都是前一次更新后的结果，所以最终能实现累加 3 的效果。
 - 这是 React 在快照特性下，为我们提供的既保持快照的稳定性，又能实现连续更新的优雅方案。
 
 ## 把一系列 state 更新加入队列
+
 设置组件 state 会把一次重新渲染加入队列。但有时你可能会希望在下次渲染加入队列之前对 state 的值执行多次操作。为此，了解 React 如何批量更新 state 会很有帮助。
 **React 会对 state 更新进行批处理**
+
 ```jsx
 import { useState } from 'react';
 
@@ -772,7 +870,9 @@ export default function Counter() {
   );
 }
 ```
+
 **在下次渲染前多次更新同一个 state**
+
 ```jsx
 import { useState } from 'react';
 
@@ -796,10 +896,12 @@ export default function Counter() {
 ```
 
 ## 更新 state 中的对象
+
 state 中可以保存任意类型的 JavaScript 值，包括对象。但是，你不应该直接修改存放在 React state 中的对象。相反，当你想要更新一个对象时，你需要创建一个新的对象（或者将其拷贝一份），然后将 state 更新为此对象。
 
 **将 state 视为只读的**
 换句话说，你应该 把所有存放在 state 中的 JavaScript 对象都视为只读的。
+
 ```jsx
 import { useState } from 'react';
 
@@ -834,8 +936,10 @@ export default function MovingDot() {
 }
 
 ```
+
 **使用展开语法复制对象**
-对于普通的对象更新，我们主要使用 ** 对象展开运算符（...）** 来创建新对象，这是 React 中最常用、最推荐的方式。
+对于普通的对象更新，我们主要使用 **对象展开运算符（...）** 来创建新对象，这是 React 中最常用、最推荐的方式。
+
 ```jsx
 import { useState } from 'react';
 
@@ -892,6 +996,7 @@ const updateCity = () => {
 
 export default UserProfile;
 ```
+
 **使用 Immer 编写简洁的更新逻辑**
 如果你的 state 有多层的嵌套，你或许应该考虑 将其扁平化。但是，如果你不想改变 state 的数据结构，你可能更喜欢用一种更便捷的方式来实现嵌套展开的效果。Immer 是一个非常流行的库，它可以让你使用简便但可以直接修改的语法编写代码，并会帮你处理好复制的过程。通过使用 Immer，你写出的代码看起来就像是你“打破了规则”而直接修改了对象：
 
@@ -904,6 +1009,7 @@ export default UserProfile;
 ===================================================
 
 **代码导入**
+
 ```jsx
 import { useImmer } from 'use-immer';
 
@@ -949,9 +1055,12 @@ export default function Form() {
 }
 
 ```
+
 ## 更新 state 中的数组
+
 数组是另外一种可以存储在 state 中的 JavaScript 对象，它虽然是可变的，但是却应该被视为不可变。同对象一样，当你想要更新存储于 state 中的数组时，你需要创建一个新的数组（或者创建一份已有数组的拷贝值），并使用新数组设置 state。
 **向数组中添加元素**
+
 ```jsx
 import { useState } from 'react';
 let nextId = 0；
@@ -983,8 +1092,10 @@ setArtists([
   ...artists // 将原数组中的元素放在末尾
 ]);
 ```
+
 **从数组中删除元素**
 从数组中删除一个元素最简单的方法就是将它过滤出去。换句话说，你需要生成一个不包含该元素的新数组。这可以通过 filter 方法实现，例如：
+
 ```jsx
 import { useState } from 'react';
 
@@ -1026,6 +1137,7 @@ export default function List() {
   );
 }
 ```
+
 **替换数组中的元素**
 想要替换数组中一个或多个元素是非常常见的。类似 arr[0] = 'bird' 这样的赋值语句会直接修改原始数组，所以在这种情况下，你也应该使用 map。
 
@@ -1050,9 +1162,11 @@ function App() {
 
 export default App;
 ```
+
 **向数组中插入元素**
 有时，你也许想向数组特定位置插入一个元素，这个位置既不在数组开头，也不在末尾。为此，你可以将数组展开运算符 ... 和 slice() 方法一起使用。slice() 方法让你从数组中切出“一片”。为了将元素插入数组，你需要先展开原数组在插入点之前的切片，然后插入新元素，最后展开原数组中剩下的部分。
 下面的例子中，插入按钮总是会将元素插入到数组中索引为 1 的位置。
+
 ```jsx
 import { useState } from 'react';
 
@@ -1102,11 +1216,13 @@ export default function List() {
   );
 }
 ```
+
 **其他改变数组的情况**
 总会有一些事，是你仅仅依靠展开运算符和 map() 或者 filter() 等不会直接修改原值的方法所无法做到的。例如，你可能想翻转数组，或是对数组排序。而 JavaScript 中的 reverse() 和 sort() 方法会改变原数组，所以你无法直接使用它们。
 
 然而，你可以先拷贝这个数组，再改变这个拷贝后的值。
 翻转数组的例子：
+
 ```jsx
 import { useState } from 'react';
 
@@ -1140,12 +1256,14 @@ export default function List() {
 }
 
 ```
+
 **更新数组内部的对象**
 对象并不是 真的 位于数组“内部”。可能他们在代码中看起来像是在数组“内部”，但其实数组中的每个对象都是这个数组“指向”的一个存储于其它位置的值。这就是当你在处理类似 list[0] 这样的嵌套字段时需要格外小心的原因。其他人的艺术品清单可能指向了数组的同一个元素！
 
 当你更新一个嵌套的 state 时，你需要从想要更新的地方创建拷贝值，一直这样，直到顶层。 让我们看一下这该怎么做。
 
 在下面的例子中，两个不同的艺术品清单有着相同的初始 state。他们本应该互不影响，但是因为一次 mutation，他们的 state 被意外地共享了，勾选一个清单中的事项会影响另外一个清单：
+
 ```jsx
 import { useState } from 'react';
 
@@ -1200,7 +1318,9 @@ export default function TodoList() {
   );
 }
 ```
+
 **摘要**
+
 - 你可以把数组放入 state 中，但你不应该直接修改它。
 - 不要直接修改数组，而是创建它的一份 新的 拷贝，然后使用新的数组来更新它的状态。
 - 你可以使用 [...arr, newItem] 这样的数组展开语法来向数组中添加元素。
@@ -1213,6 +1333,7 @@ export default function TodoList() {
 通常情况下，你应该不需要更新处于非常深层级的 state 。如果你有此类需求，你或许需要调整一下数据的结构，让数据变得扁平一些。
 如果你不想改变 state 的数据结构，你也许会更喜欢使用 Immer ，它让你可以继续使用方便的，但会直接修改原值的语法，并负责为你生成拷贝值。
 下面是我们用 Immer 来重写的艺术愿望清单的例子：
+
 ```jsx
 import {useState} from 'react';
 import {useImmer} from 'use-immer';
@@ -1230,10 +1351,14 @@ export default function TodoList() {
   )
 }
 ```
+
 # 状态管理
+
 ## 用 State 响应输入
+
 **React 声明式 UI 编程的核心步骤**
 React 的声明式 UI 编程遵循 **“数据驱动视图”** 的逻辑，核心步骤可以总结为以下 5 步：
+
 - 步骤 1：定义 UI 的状态（State）
 状态是驱动 UI 变化的核心数据，是 UI 的 “数据源”。你需要先确定 UI 中哪些部分是动态的，这些动态部分对应的数据就是状态。
 - 步骤 2：根据状态描述 UI 结构（声明 UI）
@@ -1249,6 +1374,7 @@ React 的声明式 UI 编程遵循 **“数据驱动视图”** 的逻辑，核�
 
 案例 1：基础计数器（入门级）
 这个案例包含状态定义、UI 声明、事件绑定和自动更新，是最基础的声明式 UI 示例。
+
 ```jsx
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
@@ -1284,6 +1410,7 @@ function Counter() {
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<Counter />);
 ```
+
 代码解释
 
 useState(0)：React 的状态钩子，用于在函数组件中定义状态，初始计数为 0。
@@ -1291,21 +1418,27 @@ JSX 部分：直接用{count}将状态嵌入 UI，描述了 “计数是 count �
 点击按钮时，调用setCount修改状态，React 会自动重新渲染组件，更新页面上的计数，你不需要手动获取 DOM 元素并修改其内容（这是命令式的操作）。
 
 ## 选择 State 结构
+
 构建良好的 state 可以让组件变得易于修改和调试，而不会经常出错。以下是你在构建 state 时应该考虑的一些建议。
 **构建 state 的原则**
+
 - 合并关联的 state
-```jsx 
+
+```jsx
 const [x, setX] = useState(0);
 const [y, setY] = useState(0);
 
 换成
 const [position,, setPosition] = useState({x:0,y:0})
 ```
+
 如果某两个 state 变量总是一起变化，则将它们统一成一个 state 变量可能更好
 
 **注意**
 如果你的 state 变量是一个对象时，请记住，你不能只更新其中的一个字段 而不显式复制其他字段。例如，在上面的例子中，你不能写成 setPosition({ x: 100 })，因为它根本就没有 y 属性! 相反，如果你想要仅设置 x，则可执行 setPosition({ ...position, x: 100 })，或将它们分成两个 state 变量，并执行 setX(100)。
+
 - 避免矛盾的 state
+
 ```jsx
 场景 1：简单场景（年龄与是否成年）
 ① 有矛盾的原始代码（问题版）
@@ -1334,11 +1467,13 @@ function UserAge() {
   );
 }
 ```
+
 ② 改造步骤（按三步法来）
 **识别**：核心 state 是age，冗余 state 是isAdult（isAdult = age >= 18）。
 **移除冗余 state**：删除const [isAdult, setIsAdult] = useState(false);，替换为const isAdult = age >= 18;。
 **简化更新逻辑**：删除setIsAdult(newAge >= 18);，只保留更新age的逻辑。
 ③ 改造后的无矛盾代码
+
 ```jsx
 import { useState } from 'react';
 
@@ -1362,9 +1497,11 @@ function UserAge() {
   );
 }
 ```
-- 避免冗余的 state 
+
+- 避免冗余的 state
 如果你能在渲染期间从组件的 props 或其现有的 state 变量中计算出一些信息，则不应该把这些信息放到该组件的 state 中。
 这个表单有三个 state 变量：firstName、lastName 和 fullName。然而，fullName 是多余的。在渲染期间，你始终可以从 firstName 和 lastName 中计算出 fullName，因此需要把它从 state 中删除。
+
 ```jsx
 import { useState } from 'react';
 
@@ -1406,7 +1543,9 @@ export default function Form() {
   );
 }
 ```
+
 - 避免重复的 state
+
 ```jsx
 import { useState } from 'react';
 
@@ -1453,9 +1592,11 @@ export default function Menu() {
   );
 }
 ```
+
 **避免深度嵌套的 state**
 
-怎么去解决 
+怎么去解决
+
 ```jsx
 import { useState } from 'react';
 import { produce } from 'immer'; // 导入Immer的produce函数
@@ -1493,7 +1634,9 @@ function UserInfo() {
   );
 }
 ```
+
 useImmer是 Immer 团队为 React 开发的专属钩子，它的底层其实就是封装了useState + produce，是一种语法糖。简单来说：
+
 ```jsx
 // useImmer的底层逻辑（简化版）
 import { useState } from 'react';
@@ -1507,11 +1650,13 @@ function useImmer(initialState) {
   return [state, setImmerState];
 }
 ```
+
 ## 在组件间共享状态
 
 有时候，你希望两个组件的状态始终同步更改。要实现这一点，可以将相关 state 从这两个组件上移除，并把 state 放到它们的公共父级，再通过 props 将 state 传递给这两个组件。这被称为“状态提升”，这是编写 React 代码时常做的事。
 
-- 举例说明一下状态提升 
+- 举例说明一下状态提升
+
 ```jsx
 import { useState } from 'react';
 
@@ -1560,6 +1705,7 @@ export default function Accordion() {
 父组件提供的状态更新方法（比如onShow，用于触发状态修改）。
 触发事件：在用户交互时（比如点击按钮），调用父组件传递的更新方法，间接让父组件修改共享状态。
 用代码对应这个分工（一目了然）
+
 ```jsx
 // 父组件：管状态 + 提供更新方法
 function Accordion() {
@@ -1603,7 +1749,9 @@ function Panel({ isActive, onShow, title, children }) {
   );
 }
 ```
+
 # 父子
+
 ```ts
 // 导入React核心库和useState状态钩子：useState用于管理组件的响应式状态
 import React, { useState } from 'react';
@@ -1677,8 +1825,11 @@ const ParentInput = () => {
 // 导出父组件，供其他文件引入使用
 export default ParentInput;
 ```
+
 # hook
+
 ## useref
+
 ```ts
 import { useRef, useEffect } from 'react';
 
@@ -1700,16 +1851,21 @@ function InputFocus() {
 
 export default InputFocus;
 ```
+
 ## useContext
+
 1. 创建 Context（用 createContext）
 首先用 React 提供的 createContext 方法创建一个 Context 对象，可设置默认值（仅当组件没有匹配的 Provider 时生效）：
+
 ```ts
 import { createContext, useContext } from 'react';
 
 // 创建Context，默认值为null（可选）
 const UserContext = createContext(null);
 ```
+
 2. 用 Provider 包裹组件树，提供共享数据
+
 ```ts
 function App() {
   const user = { name: "小明", age: 20 };
@@ -1727,8 +1883,10 @@ function Parent() {
   return <Child />;
 }
 ```
+
 3. 在子组件中用 useContext 获取数据
 在需要使用共享数据的组件中，调用 useContext 并传入创建的 Context 对象，即可直接获取共享数据：
+
 ```ts
 function Child() {
   // 用useContext获取UserContext中的数据
@@ -1747,6 +1905,7 @@ export default App;
 ```
 
 进阶示例：动态更新 Context 数据
+
 ```ts
 import { createContext, useContext, useState } from 'react';
 
@@ -1800,11 +1959,15 @@ function App() {
 
 export default App;
 ```
+
 ## useMemo
+
 useMemo 核心用法：useMemo(计算函数, 依赖项数组)，缓存计算结果，仅依赖变化时重新计算；
 核心使用场景：① 耗时的复杂计算；② 缓存复杂类型 props（配合 React.memo）；③ 缓存多依赖的衍生状态；
 关键原则：只在计算有性能损耗时使用，依赖项必须准确，不滥用、不依赖它做逻辑判断。
+
 - demo
+
 ```ts
 import { useMemo } from 'react';
 
@@ -1819,12 +1982,15 @@ const memoizedValue = useMemo(
   [依赖项1, 依赖项2] 
 );
 ```
+
 ## useReducer
+
 使用 useReducer 本质是 “三要素” 协作：
-要素	作用
-state	当前的状态值（和 useState 的 state 一样，是你要管理的数据）
-reducer	纯函数，唯一能更新 state 的地方，接收 state 和 action，返回新 state
-dispatch	触发状态更新的函数，接收 action（动作指令），调用后会执行 reducer
+要素 作用
+state 当前的状态值（和 useState 的 state 一样，是你要管理的数据）
+reducer 纯函数，唯一能更新 state 的地方，接收 state 和 action，返回新 state
+dispatch 触发状态更新的函数，接收 action（动作指令），调用后会执行 reducer
+
 ```ts
 import { useReducer } from 'react';
 
@@ -1880,4 +2046,5 @@ function MyComponent() {
 
 export default MyComponent;
 ```
+
 生成的 ID：r0 | username-r1
