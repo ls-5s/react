@@ -1,52 +1,81 @@
-const About = () => {
+import { useState } from "react";
+import { produce } from "immer";
+import { usea } from "../store/test";
+import Modal from "../components/Modal"; // 导入 Modal 组件
+
+interface Op {
+  op: {
+    li: number;
+    sum: number;
+  };
+}
+
+const Child1 = ({ op }: Op) => {
+  const { li, sum } = op;
   return (
-    <div className="max-w-4xl mx-auto px-4">
-      <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-6">关于 My App</h1>
-
-      <div className="bg-white rounded-lg shadow-md p-4 md:p-8 space-y-4 md:space-y-6">
-        <section>
-          <h2 className="text-xl font-semibold text-gray-900 mb-3">项目介绍</h2>
-          <p className="text-gray-600 leading-relaxed">
-            My App 是一个现代化的 Web 应用模板，使用了最新的前端技术栈构建。
-            我们致力于提供最佳的开发和用户体验。
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold text-gray-900 mb-3">技术栈</h2>
-          <ul className="grid md:grid-cols-2 gap-3 text-gray-600">
-            <li className="flex items-center">
-              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-              React 19
-            </li>
-            <li className="flex items-center">
-              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-              TypeScript
-            </li>
-            <li className="flex items-center">
-              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-              Vite
-            </li>
-            <li className="flex items-center">
-              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-              Tailwind CSS v4
-            </li>
-            <li className="flex items-center">
-              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-              React Router v7
-            </li>
-          </ul>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold text-gray-900 mb-3">联系我们</h2>
-          <p className="text-gray-600 leading-relaxed">
-            如果您有任何问题或建议，请随时联系我们。
-            我们期待您的反馈！
-          </p>
-        </section>
-      </div>
+    <div>
+      我是child组件
+      <p>接收到的 li 值: {li}</p>
+      <p>接收到的 sum 值: {sum}</p>
     </div>
+  );
+};
+
+const About = () => {
+  const { count, increment, reset } = usea();
+
+  const [sum, setsum] = useState(0);
+  const [list, setlist] = useState([
+    { id: 1, name: "张三", age: 20 },
+    { id: 2, name: "李四", age: 22 },
+    { id: 3, name: "王五", age: 25 },
+  ]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // 添加弹窗状态
+
+  const add = () => {
+    setsum((sum) => sum + 1);
+  };
+
+  const li = () => {
+    setlist(
+      produce((daf) => {
+        const s = daf.find((u) => u.id === 1);
+        if (s) {
+          s.age = s.age + 1;
+        }
+      }),
+    );
+  };
+
+  const openModal = () => setIsModalOpen(true); // 打开弹窗的函数
+  const closeModal = () => setIsModalOpen(false); // 关闭弹窗的函数
+
+  return (
+    <>
+      <div>
+        <button onClick={add} className="w-20 h-7 bg-amber-300 rounded-2xl">
+          点击加1
+        </button>
+        <p>当前sum的值为：{sum}</p>
+        {count}-11111111111 {/* 现在应该能正常显示了 */}
+        <ul>
+          {list.map((ss) => (
+            <li key={ss.id}>
+              {ss.name}-{ss.age}
+              <div>
+                <button onClick={li}>+1</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <button onClick={openModal}>打开弹窗</button> {/* 添加打开弹窗的按钮 */}
+      </div>
+      {/* 其他组件 */}
+      <Modal isOpen={isModalOpen} onClose={closeModal} title="About页面的弹窗">
+        <p>这是在 About 页面中使用的弹窗。</p>
+        <p>这是一个简单的 Modal 组件示例。</p>
+      </Modal>
+    </>
   );
 };
 

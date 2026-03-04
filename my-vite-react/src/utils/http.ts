@@ -29,7 +29,7 @@ const instance: AxiosInstance = axios.create({
 
 // 请求拦截器
 instance.interceptors.request.use(
-  (config: AxiosRequestConfig) => {
+  (config) => {
     // 携带token
     const token = localStorage.getItem("token");
     if (token) {

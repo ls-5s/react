@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { produce } from "immer";
-
+import { useParams, useLocation } from "react-router-dom";
 // 定义 Props 接口（规范类型）
 interface Arr1Props {
   li: { sss: number };
@@ -40,8 +40,10 @@ const Demo2 = ({ add }: Demo2Props) => {
 // 父组件：管理状态，定义加和函数
 const Demo1 = () => {
   const [a, setA] = useState(0); // 优化命名：seta → setA（小驼峰）
-
-  // 优化命名：sum → increment（语义更清晰），TS 类型标注完整
+  const params = useParams();
+  const location = useLocation();
+  const { name, age } = location.state;
+  const id = Number(params.ID); // 优化命名：sum → increment（语义更清晰），TS 类型标注完整
   const increment = (b: number) => {
     // 推荐使用函数式更新（避免闭包陷阱）
     setA((prevA) => prevA + b);
@@ -49,8 +51,9 @@ const Demo1 = () => {
 
   return (
     <div style={{ padding: "20px" }}>
-      {" "}
-      {/* 外层容器，避免 Fragment 冗余 */}
+      {id} {/* 外层容器，避免 Fragment 冗余 */}
+      <p>接收到的 name 值: {name}</p>
+      <p>接收到的 age 值: {age}</p>
       <Demo2 add={increment} />
       <p style={{ marginTop: "10px" }}>当前数值：{a}</p>{" "}
       {/* 修复 {{a}} 错误，改为单大括号 */}
