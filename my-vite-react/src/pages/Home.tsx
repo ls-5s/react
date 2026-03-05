@@ -8,7 +8,11 @@ const Home = () => {
   return (
     <>
       <NavLink to={`/demo/${id}`}>Demo</NavLink>
+      <NavLink to="/tailwind">css</NavLink>
       <button onClick={urls}>跳转</button>
+      <div className="relative w-100 h-100 m-auto bg-amber-300">
+        <div className="absolute top-4 left-4 w-100 h-100 bg-blue-300 z-50"></div>
+      </div>
     </>
   );
 };

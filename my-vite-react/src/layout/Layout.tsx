@@ -61,7 +61,7 @@ const Layout = () => {
                 test
               </NavLink>
               <NavLink
-                to="/products"
+                to="/tailwind"
                 className={({ isActive }) =>
                   `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive

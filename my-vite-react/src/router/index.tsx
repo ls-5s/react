@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import Layout from "../pages/Layout";
+import Layout from "../layout/Layout";
 import Home from "../pages/Home";
 import About from "../pages/About";
 import Demo from "../pages/Demo";
@@ -7,7 +7,7 @@ import Test from "../pages/Test";
 import Products from "../pages/products/Products";
 import ProductDetail from "../pages/products/ProductDetail";
 import ProductCategory from "../pages/products/ProductCategory";
-
+import TailwindDemo from "../pages/tailwind";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -30,6 +30,11 @@ const router = createBrowserRouter([
         path: "test",
         element: <Test />,
       },
+      {
+        path: "tailwind",
+        element: <TailwindDemo />,
+      },
+
       // 产品中心 - 二级路由
       {
         path: "products",

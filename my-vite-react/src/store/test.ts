@@ -19,3 +19,15 @@ export const usea = create<op>()(
     },
   ),
 );
+
+// export default function Counter() {
+//   const { count, increment, reset } = usea();
+
+//   return (
+//     <div>
+//       <h1>{count}</h1>
+//       <button onClick={increment}>+1</button>
+//       <button onClick={reset}>重置</button>
+//     </div>
+//   );
+// }
