@@ -1,20 +1,42 @@
-import { useNavigate, NavLink } from "react-router-dom";
-const Home = () => {
-  const id = 1;
-  const navigate = useNavigate();
-  const urls = () => {
-    navigate(`/demo/${id}`, { state: { name: "张三", age: 18 } });
-  };
-  return (
-    <>
-      <NavLink to={`/demo/${id}`}>Demo</NavLink>
-      <NavLink to="/tailwind">css</NavLink>
-      <button onClick={urls}>跳转</button>
-      <div className="relative w-100 h-100 m-auto bg-amber-300">
-        <div className="absolute top-4 left-4 w-100 h-100 bg-blue-300 z-50"></div>
-      </div>
-    </>
-  );
-};
+import { useRef, useEffect } from "react";
 
-export default Home;
+function InputFocusDemo() {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // 组件挂载时自动聚焦
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+      // 初始时拿默认值
+      console.log("初始值：", inputRef.current.value); // 输出：初始值：默认值
+    }
+  }, []);
+
+  // 点击按钮获取当前输入框的实时值
+  const getInputValue = () => {
+    if (inputRef.current) {
+      const currentValue = inputRef.current.value;
+      alert("当前输入框的值：" + currentValue);
+      console.log("当前值：", currentValue);
+    }
+  };
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <input
+        ref={inputRef}
+        type="text"
+        defaultValue="默认值"
+        style={{ padding: "8px" }}
+      />
+      <button
+        onClick={getInputValue}
+        style={{ marginLeft: "10px", padding: "8px 16px" }}
+      >
+        获取输入框的值
+      </button>
+    </div>
+  );
+}
+
+export default InputFocusDemo;

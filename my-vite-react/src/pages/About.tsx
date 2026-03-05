@@ -2,8 +2,7 @@ import { useState } from "react";
 import { produce } from "immer";
 import { usea } from "../store/test";
 import Modal from "../components/Modal";
-
-
+import { test } from "../api/test";
 
 interface User {
   id: number;
@@ -15,7 +14,7 @@ const About = () => {
   const { count, increment } = usea();
 
   const [sum, setSum] = useState<number>(0);
-  
+
   const [list, setList] = useState<User[]>([
     { id: 1, name: "张三", age: 20 },
     { id: 2, name: "李四", age: 22 },
@@ -34,8 +33,12 @@ const About = () => {
         if (user) {
           user.age += 1;
         }
-      })
+      }),
     );
+  };
+  const sss = async () => {
+    const res = await test();
+    console.log(res);
   };
 
   const openModal = () => setIsModalOpen(true);
@@ -46,6 +49,9 @@ const About = () => {
       <div>
         <button onClick={add} className="w-20 h-7 bg-amber-300 rounded-2xl">
           点击加 1
+        </button>
+        <button onClick={sss} className="w-20 h-7 bg-amber-300 rounded-2xl">
+          点击请求
         </button>
         <p>当前 sum 的值为：{sum}</p>
         <p>当前 count 的值为：{count}</p>
